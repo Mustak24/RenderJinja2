@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>{{ invoice["voucher_type"] }} - {{ invoice["voucher_number"] }}</title>
+
+    <style>
+        :root {
+            --primary: #6b46c1;
+        }
+
+        * {
+            box-sizing: border-box;
+            padding: 0;
+            margin: 0;
+        }
+
+        html, body {
+            font-family: Georgia, "Times New Roman", serif;
+            color: #222;
+            width: 100vw;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+
+        .page {
+            width: 210mm;
+            height: 297mm;
+            padding: 12mm;
+            background: #fff;
+            font-size: 12px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        @page {
+            size: A4;
+            margin: 0;
+        }
+    </style>
+</head>
+
+{% macro decimal_fix(value, precision=2) %}
+  {{ "%.*f" | format(precision, value | float) }}
+{% endmacro %}
+
+
+<body>
+    <div class="page" >
+        {% if company.sub_logo %}
+            <div class="absolute top-4 self-center w-24 h-10" >
+                <img src="{{ company.sub_logo }}" alt="Sub Logo" class="w-full h-full object-contain" >
+            </div>
+        {% endif %}
+
+        <div class="text-end opacity-60 font-semibold" >
+            ORIGINAL FOR RECIPIENT
+        </div>
+        
+        <div class="flex gap-2 items-center" >
+            <div class="flex flex-col flex-1 " >
+                <div class="font-bold text-xl uppercase" >
+                    {{ company.name }}
+                </div>
+                <div class="uppercase" >
+                    {{ company.address }}
+                </div>
+                    <div>
+                        State: 
+                        {% if company.state_code %}
+                            {{ company.state_code }} -
+                        {% endif %}
+
+                        {% if company.state %}
+                            {{ company.state }}
+                        {% endif %}
+                    </div>
+
+                {% if company.phone.code and company.phone.number %}
+                    <div>
+                        Phone No: {{ company.phone.code }} {{ company.phone.number }}
+                    </div>
+                {% endif %}
+
+                {% if company.gstin %}
+                    <div>
+                        GSTIN: {{ company.gstin }}
+                    </div>
+                {% endif %}
+
+                {% if company.cin %}
+                    <div>
+                        CIN: {{ company.cin }}
+                    </div>
+                {% endif %}
+                
+                {% if company.udyam %}
+                    <div>
+                        UDYAM: {{ company.udyam }}
+                    </div>
+                {% endif %}
+            </div>
+
+             <div class="bg-zinc-200 size-[100px] flex items-center justify-center" >
+                {% if company.logo %}
+                    <img src="{{ company.logo }}" alt="Company Logo" class="w-full h-full object-contain" >
+                {% else %}
+                    <span class="text-gray-500 text-sm text-center m-2" >Company Logo</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <hr class="my-2 border-[var(--primary)]" />
+
+        <div class="flex flex-col gap-4" >
+            <div class="font-bold text-xl uppercase text-[var(--primary)] text-center" >
+                Tax Invoice
+            </div>
+
+            <div class="flex gap-2" >
+                <div class="flex-1" >
+                    <div class="font-semibold" >BILL TO</div>
+                    <div>
+                        <div class="font-semibold uppercase" >
+                            {{ party.name }}
+                        </div>
+
+                        <div class="uppercase" >
+                            {{ party.mailing_address }}
+                        </div>
+
+                        <div>
+                            {% if party.mailing_state_code %}
+                                {{ party.mailing_state_code }} -
+                            {% endif %}
+
+                            {{ party.mailing_state }} -
+                            
+                            {{ party.mailing_pincode }}
+                            {{ party.mailing_country }}
+                        </div>
+
+                        <div>
+                            GSTIN: {{ party.tin }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex-1" >
+                    <div class="font-semibold" >SHIP TO</div>
+
+                    <div>
+                        <div class="uppercase" >
+                            {% if party.shipping_address %}
+                                {{ party.shipping_address }}
+                            {% else %}
+                                {{ party.mailing_address }}
+
+                                <div class="capitalize" >
+                                    {% if party.mailing_state_code %}
+                                        {{ party.mailing_state_code }} -
+                                    {% endif %}
+
+                                    {{ party.mailing_state }} -
+                                    
+                                    {{ party.mailing_pincode }}
+                                    {{ party.mailing_country }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex-1" >
+                    <div class="font-semibold" >TRANSPORTATION DETAILS</div>
+
+                    {% if invoice.mode_of_transport %}
+                        <div>
+                            Transport Mode: {{ invoice.mode_of_transport }}
+                        </div>
+                    {% endif %}
+
+                    {% if invoice.vehicle_number %}
+                        <div>
+                            Vehicle No: {{ invoice.vehicle_number }}
+                        </div>
+                    {% endif %}
+
+                    {% if invoice.container_number %}
+                        <div>
+                            Container No: {{ invoice.container_number }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="flex-1 text-end" >
+                    <div class="font-semibold" >INVOICE DETAILS</div>
+                    
+                    <div>
+                        Invoice No: {{ invoice.voucher_number }}
+                    </div>
+
+                    {% if invoice.mode_of_transport %}
+                        <div>
+                            Date: {{ invoice.date }}
+                        </div>
+                    {% endif %}
+                    
+                    <div>
+                        Place of Supply: {{ invoice.place_of_supply }}
+                    </div>
+
+                    {% if invoice.e_way_bill_number %}
+                        <div>
+                            E-Way Bill Number: {{ invoice.e_way_bill_number }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="border-[var(--primary)] border-[1px] mt-2" >
+                <table class="w-full" >
+                    <thead class="bg-[var(--primary)] text-white" >
+                        <tr>
+                            <th class="p-1 text-start" >S.No</th>
+                            <th class="p-1 text-start" >Item Name</th>
+                            <th class="p-1 text-start" >HSN/SAC</th>
+                            <th class="p-1 text-end" >Quantity</th>
+                            <th class="p-1 text-center" >Unit</th>
+                            <th class="p-1 text-end" >Rate</th>
+                            <th class="p-1 text-end" >Dis.</th>
+                            <th class="p-1 text-end" >Taxable Amt</th>
+                            <th class="p-1" >GST</th>
+                            <th class="p-1 text-end" >Amount</th>
+                        </tr>
+                    </thead>
+
+                    {% set items_summary = namespace(
+                        quantity=0,
+                        tax_amount=0.0,
+                        amount=0.0,
+                        gst_amount=0.0,
+                        is_all_unit_same=true
+                    ) %}
+
+                    {% for item in invoice["items"] %}
+                        {% set current_igst = item.igst_amount | float if item.igst_amount else 0.0 %}
+                        {% set current_sgst = item.sgst_amount | float if item.sgst_amount else 0.0 %}
+                        {% set current_cgst = item.cgst_amount | float if item.cgst_amount else 0.0 %}
+                        
+                        {% if item.igst_amount %}
+                            {% set item_gst = current_igst %}
+                        {% else %}
+                            {% set item_gst = current_sgst + current_cgst %}
+                        {% endif %}
+
+                        {% set items_summary.quantity = items_summary.quantity + (item.quantity | int) %}
+                        {% set items_summary.tax_amount = items_summary.tax_amount + (item.tax_amount | float) %}
+                        {% set items_summary.amount = items_summary.amount + (item.amount | float) %}
+                        {% set items_summary.gst_amount = items_summary.gst_amount + item_gst %}
+                        {% set items_summary.is_all_unit_same = items_summary.is_all_unit_same and (item.unit == invoice["items"][0].unit) %}
+
+                        <tr>
+                            <td class="p-1">{{ loop.index }}</td>
+                            <td class="p-1">{{ item.name }}</td>
+                            <td class="p-1">{{ item.hsn }}</td>
+                            <td class="p-1 text-end">{{ item.quantity }}</td>
+                            <td class="p-1 text-center">{{ item.unit }}</td>
+                            <td class="p-1 text-end">{{ item.rate }}</td>
+                            <td class="p-1 text-end">{{ item.discount }}</td>
+                            <td class="p-1 text-end">{{ item.tax_amount }}</td>
+                            <td class="p-1 text-end">
+                                {{ decimal_fix(item_gst) }}
+                            </td>
+                            <td class="p-1 text-end">{{ item.amount }}</td>
+                        </tr>
+                    {% endfor %}
+
+                    <tfoot class="border-t-[1px] border-[var(--primary)]" >
+                        <tr>
+                            <td colspan="3" class="p-1 text-bold">Total:</td>
+                            <td class="p-1 text-end">
+                                {% if items_summary.is_all_unit_same %}
+                                    {{ items_summary.quantity }}
+                                {% endif %}
+                            </td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td class="p-1 text-end">{{ decimal_fix(items_summary.tax_amount) }}</td>
+                            <td class="p-1 text-end">{{ decimal_fix(items_summary.gst_amount) }}</td>
+                            <td class="p-1 text-end">{{ decimal_fix(items_summary.amount) }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+        </div>
+
+        <div class="flex gap-2 mt-2" >
+            <div class="flex-1 flex flex-col gap-2" >
+                <div>
+                    <div class="font-semibold" >Amount in Words:</div>
+                    <div class="capitalize" >
+                        {{ invoice.total_in_words }}
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="font-semibold" >Terms and Conditions:</div>
+                    <ol>
+                        {% for term in [
+                            "This is to certify that we have a valid GST Registration and the above information is true.",
+                            "Interest @ 18% per annum will be charged on payments due after 15 days from the date of billing.",
+                            "Please accept goods in proper condition only.",
+                            "All Disputes & claims will be referred to the court at Udaipur jurisdiction.",
+                            "Do not make payment without the printed receipt. Please keep the receipt safe."
+                        ] %}
+                            <li class="text-[10px] list-inside list-decimal" >{{ term }}</li>
+                        {% endfor %}
+                    </ol>
+                </div>
+
+            </div>
+
+            <div class="flex-1 border-[1px] border-[var(--primary)] [&_>_div]:p-1 h-fit" >
+                <div class="flex items-center justify-between gap-2" >
+                    <div>Sub Total</div>
+                    <div>{{ decimal_fix(items_summary.tax_amount) }}</div>
+                </div>
+
+                {# {% for tax in invoice['taxes'] %}
+                    <div class="flex items-center justify-between gap-2" >
+                        <div>{{ tax.tax_name }}@{{ tax.rate }}%</div>
+                        <div>{{ decimal_fix(tax.tax_amount) }}</div>
+                    </div>
+                {% endfor %} #}
+
+                <div class="flex items-center justify-between gap-2" >
+                    <div>Round Off</div>
+                    <div>{{ decimal_fix(invoice.roundoff) }}</div>
+                </div>
+
+                <div class="flex items-center justify-between gap-2 font-bold bg-[var(--primary)] text-white" >
+                    <div>Grand Total</div>
+                    <div>{{ decimal_fix(invoice.grand_total) }}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex gap-2 mt-4" >
+            <div class="flex-1 flex gap-1" >
+                <div class="size-[80px] aspect-square flex items-center justify-center bg-gray-200" >
+                    {% if company.logo %}
+                        <img src="{{ company.logo }}" alt="Company Logo" class="w-full h-full object-contain" >
+                    {% else %}
+                        <span class="text-gray-500 text-sm text-center m-1" >Company QR</span>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <div class="font-bold" >
+                        Pay To:
+                    </div>
+                    <div class="flex flex-col" style="line-height: 1.3" >
+                        <div>
+                            Bank Name: {{ company.bank_name }}
+                        </div>
+                        <div>
+                            {{ company.bank_branch }}    
+                        </div>
+                        <div>
+                            A/C No: {{ company.account_no }}
+                        </div>
+                        <div>
+                            IFS Code: {{ company.ifsc }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex-1 flex flex-col items-center justify-center" >
+                <div class="font-bold" >
+                    For {{ company.name }}
+                </div>
+
+                <div class="h-20 w-40 flex items-center justify-center" >
+
+                </div>
+
+                <div>
+                    Authorised Signatory
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

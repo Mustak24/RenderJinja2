@@ -1,0 +1,127 @@
+{
+  "invoice": {
+    "voucher_type": "Sales Invoice",
+    "voucher_number": "INV-2026-0001",
+    "date": "05-06-2026",
+    "vehicle_number": "RJ27AB1234",
+    "mode_of_transport": "Road",
+    "payment_mode": "UPI",
+    "place_of_supply": "Rajasthan",
+    "total": 50000,
+    "discount": 2500,
+    "total_amount": 47500,
+    "total_tax": 8550,
+    "additional_charge": 500,
+    "roundoff": -0.5,
+    "grand_total": 56049.5,
+    "is_reversed_charge": "No",
+    "tax_code": "GST",
+
+    "total_in_words": "Fifty-Six Thousand Forty-Nine Rupees and Paise Fifty Only",
+
+    "totals": {
+      "quantity": 15,
+      "taxable_amount": 47500,
+      "cgst": 4275,
+      "sgst": 4275,
+      "grand_total": 56049.5
+    },
+    "tax_headers": [
+      "CGST %",
+      "CGST Amount",
+      "SGST %",
+      "SGST Amount"
+    ],
+    "taxes": [
+      {
+        "tax_name": "CGST",
+        "rate": 9,
+        "amount": 4275
+      },
+      {
+        "tax_name": "SGST",
+        "rate": 9,
+        "amount": 4275
+      }
+    ],
+    "items": [
+      {
+        "name": "Laptop Dell Inspiron 15",
+        "hsn_code": "84713010",
+        "quantity": 5,
+        "rate": 8000,
+        "amount": 40000,
+        "discount": 2000,
+        "taxable_amount": 38000,
+        "cgst_rate": 9,
+        "cgst_amount": 3420,
+        "sgst_rate": 9,
+        "sgst_amount": 3420,
+        "total": 44840,
+        "unit": "pcs"
+      },
+      {
+        "name": "Wireless Mouse",
+        "hsn_code": "84716070",
+        "quantity": 10,
+        "rate": 1000,
+        "amount": 10000,
+        "discount": 500,
+        "tax_amount": 9500,
+        "tax_rate": 9500,
+        "cgst_rate": 9,
+        "cgst_amount": 855,
+        "sgst_rate": 9,
+        "sgst_amount": 855,
+        "total": 11210,
+        "unit": "box"
+      }
+    ]
+  },
+  "party": {
+    "name": "ABC Traders",
+    "mailing_address": "123 Market Road",
+    "mailing_state": "Rajasthan",
+    "mailing_country": "India",
+    "mailing_pincode": "313001",
+    "phone": {
+      "number": "9876543210",
+      "code": "+91"
+    },
+    "email": "abc.traders@example.com",
+    "tin": "08ABCDE1234F1Z5",
+    "bank_name": "State Bank of India",
+    "bank_branch": "Udaipur Main Branch",
+    "account_no": "123456789012",
+    "account_name": "ABC Traders",
+    "ifsc": "SBIN0001234",
+
+    "shipping_address": "789 Warehouse Lane"
+  },
+  "company": {
+    "name": "Vyapar Drishti Pvt Ltd",
+    "address": "456 Business Park, Udaipur",
+    "state": "Rajasthan",
+    "country": "India",
+    "pincode": "313001",
+    "phone": {
+      "number": "9123456789",
+      "code": "+91"
+    },
+    "email": "info@vyapardrishti.com",
+    "gstin": "08AAACV1234K1ZP",
+    "website": "https://vyapardrishti.com",
+    "logo_url": "https://picsum.photos/200/80",
+
+    "bank_name": "HDFC Bank",
+    "bank_branch": "Udaipur City Branch",
+    "account_no": "987654321098",
+    "account_name": "Vyapar Drishti Pvt Ltd",
+    "ifsc": "HDFC0005678",
+    "qr_code_url": "https://picsum.photos/200/200",
+    "motto": "LIFE'S A JOURNEY, KEEP SMILING",
+
+    "cin": "U12345RJ2020PTC123456",
+    "udyam": "U12345RJ2020PTC123456"
+  }
+}

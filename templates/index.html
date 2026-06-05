@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jinja2 Live Preview</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-dark: #0b0f19;
+            --text-main: #f3f4f6;
+            --accent: #6366f1;
+            --accent-hover: #4f46e5;
+            --error: #ef4444;
+            --success: #10b981;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body, html {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Outfit', sans-serif;
+            background-color: #ffffff;
+        }
+
+        #preview-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+        /* Floating Copy Button */
+        .floating-btn {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            padding: 12px 24px;
+            border-radius: 9999px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 1000;
+        }
+
+        .floating-btn:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px -5px rgba(99, 102, 241, 0.4);
+        }
+
+        .floating-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Fullscreen Error Overlay */
+        .error-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(11, 15, 25, 0.98);
+            backdrop-filter: blur(12px);
+            z-index: 999;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            text-align: center;
+            color: #f8fafc;
+        }
+
+        .error-icon {
+            font-size: 56px;
+            color: var(--error);
+            margin-bottom: 20px;
+        }
+
+        .error-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: #fca5a5;
+        }
+
+        .error-details {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            background-color: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            padding: 24px;
+            border-radius: 12px;
+            max-width: 800px;
+            width: 100%;
+            text-align: left;
+            overflow-x: auto;
+            line-height: 1.6;
+            color: #fecaca;
+            white-space: pre-wrap;
+        }
+
+        /* Toast Component */
+        .toast {
+            position: fixed;
+            bottom: 90px;
+            right: 24px;
+            background-color: rgba(17, 24, 39, 0.95);
+            border: 1px solid var(--success);
+            color: #ffffff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            z-index: 1001;
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast-icon {
+            color: var(--success);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Template Output Iframe -->
+    <iframe id="preview-iframe" title="Jinja2 Template Live Render"></iframe>
+
+    <!-- Floating Copy Button -->
+    <button class="floating-btn" id="btn-copy">
+        <span>📋</span> Copy HTML
+    </button>
+
+    <!-- Error Overlay -->
+    <div class="error-overlay" id="error-overlay">
+        <div class="error-icon">⚠️</div>
+        <h3 class="error-title" id="error-type-title">Template Render Error</h3>
+        <pre class="error-details" id="error-details-text">Error details will load here...</pre>
+    </div>
+
+    <!-- Toast Component -->
+    <div class="toast" id="toast">
+        <span class="toast-icon">✓</span>
+        <span id="toast-message">Copied to clipboard</span>
+    </div>
+
+    <script>
+        let socket;
+        let currentRenderedHTML = "";
+
+        function connectWS() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUri = `${protocol}//${window.location.host}/ws`;
+            
+            socket = new WebSocket(wsUri);
+            
+            socket.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                
+                if (data.success) {
+                    hideError();
+                    updatePreviewFrame(data.rendered);
+                    currentRenderedHTML = data.rendered;
+                } else {
+                    let errorMsg = data.message;
+                    showError(data.error_type || 'Render Error', errorMsg);
+                }
+            };
+            
+            socket.onclose = () => {
+                setTimeout(connectWS, 1000); // Reconnect loop
+            };
+        }
+
+        function updatePreviewFrame(htmlContent) {
+            const iframe = document.getElementById('preview-iframe');
+            if (iframe) {
+                const doc = iframe.contentWindow.document;
+                doc.open();
+                doc.write(htmlContent);
+                doc.close();
+            }
+        }
+
+        function showError(title, message) {
+            const overlay = document.getElementById('error-overlay');
+            const titleElem = document.getElementById('error-type-title');
+            const detailsElem = document.getElementById('error-details-text');
+            
+            titleElem.innerText = title;
+            detailsElem.innerText = message;
+            overlay.style.display = 'flex';
+        }
+
+        function hideError() {
+            const overlay = document.getElementById('error-overlay');
+            overlay.style.display = 'none';
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toast-message');
+            toastMessage.innerText = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
+        }
+
+        document.getElementById('btn-copy').addEventListener('click', () => {
+            if (!currentRenderedHTML) {
+                showToast("No HTML content to copy");
+                return;
+            }
+            navigator.clipboard.writeText(currentRenderedHTML)
+                .then(() => showToast("Copied rendered HTML to clipboard!"))
+                .catch(() => showToast("Failed to copy HTML"));
+        });
+
+        // Start connection
+        connectWS();
+    </script>
+</body>
+</html>
