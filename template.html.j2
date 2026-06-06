@@ -24,13 +24,13 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 20px;
             background-color: #f0f0f0;
+            overflow-x: hidden;
         }
 
         .page {
             width: 210mm;
-            height: 297mm;
+            min-height: 297mm;
             padding: 12mm;
             background: #fff;
             font-size: 12px;
@@ -66,10 +66,14 @@
         <div class="flex gap-2 items-center" >
             <div class="flex flex-col flex-1 " >
                 <div class="font-bold text-xl uppercase" >
-                    {{ company.name }}
+                    {{ company.company_name }}
                 </div>
                 <div class="uppercase" >
-                    {{ company.address }}
+                    {{ company.address_1 }}
+
+                    {% if company.address_2 %}
+                        , {{ company.address_2 }}
+                    {% endif %}
                 </div>
                     <div>
                         State: 
@@ -87,10 +91,16 @@
                         Phone No: {{ company.phone.code }} {{ company.phone.number }}
                     </div>
                 {% endif %}
-
-                {% if company.gstin %}
+                
+                {% if company.phone.code and company.phone.number %}
                     <div>
-                        GSTIN: {{ company.gstin }}
+                        Email: {{ company.email }}
+                    </div>
+                {% endif %}
+
+                {% if company.tin %}
+                    <div>
+                        GSTIN: {{ company.tin }}
                     </div>
                 {% endif %}
 
@@ -251,35 +261,36 @@
                     ) %}
 
                     {% for item in invoice["items"] %}
-                        {% set current_igst = item.igst_amount | float if item.igst_amount else 0.0 %}
-                        {% set current_sgst = item.sgst_amount | float if item.sgst_amount else 0.0 %}
-                        {% set current_cgst = item.cgst_amount | float if item.cgst_amount else 0.0 %}
+                        {% set taxes = invoice.taxes[loop.index - 1] %}
+                        {% set current_igst = taxes.igst | float if taxes.igst else 0.0 %}
+                        {% set current_sgst = taxes.sgst | float if taxes.sgst else 0.0 %}
+                        {% set current_cgst = taxes.cgst | float if taxes.cgst else 0.0 %}
                         
-                        {% if item.igst_amount %}
+                        {% if current_igst %}
                             {% set item_gst = current_igst %}
                         {% else %}
                             {% set item_gst = current_sgst + current_cgst %}
                         {% endif %}
 
-                        {% set items_summary.quantity = items_summary.quantity + (item.quantity | int) %}
+                        {% set items_summary.quantity = items_summary.quantity + (item.qty | int) %}
                         {% set items_summary.tax_amount = items_summary.tax_amount + (item.tax_amount | float) %}
-                        {% set items_summary.amount = items_summary.amount + (item.amount | float) %}
+                        {% set items_summary.amount = items_summary.amount + (item.total_amount | float) %}
                         {% set items_summary.gst_amount = items_summary.gst_amount + item_gst %}
-                        {% set items_summary.is_all_unit_same = items_summary.is_all_unit_same and (item.unit == invoice["items"][0].unit) %}
+                        {% set items_summary.is_all_unit_same = items_summary.is_all_unit_same and (item.pack == invoice["items"][0].pack) %}
 
                         <tr>
                             <td class="p-1">{{ loop.index }}</td>
                             <td class="p-1">{{ item.name }}</td>
                             <td class="p-1">{{ item.hsn }}</td>
-                            <td class="p-1 text-end">{{ item.quantity }}</td>
-                            <td class="p-1 text-center">{{ item.unit }}</td>
+                            <td class="p-1 text-end">{{ item.qty }}</td>
+                            <td class="p-1 text-center">{{ item.pack }}</td>
                             <td class="p-1 text-end">{{ item.rate }}</td>
-                            <td class="p-1 text-end">{{ item.discount }}</td>
+                            <td class="p-1 text-end">{{ item.discount_amount }}</td>
                             <td class="p-1 text-end">{{ item.tax_amount }}</td>
                             <td class="p-1 text-end">
                                 {{ decimal_fix(item_gst) }}
                             </td>
-                            <td class="p-1 text-end">{{ item.amount }}</td>
+                            <td class="p-1 text-end">{{ item.total_amount }}</td>
                         </tr>
                     {% endfor %}
 
@@ -304,12 +315,14 @@
 
         <div class="flex gap-2 mt-2" >
             <div class="flex-1 flex flex-col gap-2" >
-                <div>
-                    <div class="font-semibold" >Amount in Words:</div>
-                    <div class="capitalize" >
-                        {{ invoice.total_in_words }}
+                {% if invoice.total_in_words %}
+                    <div>
+                        <div class="font-semibold" >Amount in Words:</div>
+                        <div class="capitalize" >
+                            {{ invoice.total_in_words }}
+                        </div>
                     </div>
-                </div>
+                {% endif %}
                 
                 <div>
                     <div class="font-semibold" >Terms and Conditions:</div>
@@ -334,12 +347,21 @@
                     <div>{{ decimal_fix(items_summary.tax_amount) }}</div>
                 </div>
 
-                {# {% for tax in invoice['taxes'] %}
+                {% if invoice.totals.igst %}
                     <div class="flex items-center justify-between gap-2" >
-                        <div>{{ tax.tax_name }}@{{ tax.rate }}%</div>
-                        <div>{{ decimal_fix(tax.tax_amount) }}</div>
+                        <div>IGST@N/A%</div>
+                        <div>{{ decimal_fix(invoice.totals.igst) }}</div>
                     </div>
-                {% endfor %} #}
+                {% else %}
+                    <div class="flex items-center justify-between gap-2" >
+                        <div>CGST@N/A%</div>
+                        <div>{{ decimal_fix(invoice.totals.cgst) }}</div>
+                    </div>
+                    <div class="flex items-center justify-between gap-2" >
+                        <div>SGST@N/A%</div>
+                        <div>{{ decimal_fix(invoice.totals.sgst) }}</div>
+                    </div>
+                {% endif %}
 
                 <div class="flex items-center justify-between gap-2" >
                     <div>Round Off</div>
@@ -356,8 +378,8 @@
         <div class="flex gap-2 mt-4" >
             <div class="flex-1 flex gap-1" >
                 <div class="size-[80px] aspect-square flex items-center justify-center bg-gray-200" >
-                    {% if company.logo %}
-                        <img src="{{ company.logo }}" alt="Company Logo" class="w-full h-full object-contain" >
+                    {% if company.qr_code_url %}
+                        <img src="{{ company.qr_code_url }}" alt="" class="w-full h-full object-contain" >
                     {% else %}
                         <span class="text-gray-500 text-sm text-center m-1" >Company QR</span>
                     {% endif %}
@@ -386,15 +408,28 @@
 
             <div class="flex-1 flex flex-col items-center justify-center" >
                 <div class="font-bold" >
-                    For {{ company.name }}
+                    For {{ company.company_name }}
                 </div>
 
                 <div class="h-20 w-40 flex items-center justify-center" >
-
+                    {% if company.sign %}
+                        <img src="{{ company.sign }}" alt="Authorised Signatory" class="w-full h-full object-contain" >
+                    {% endif %}
                 </div>
 
                 <div>
                     Authorised Signatory
+                </div>
+            </div>
+        </div>
+
+        <div class="flex-1 flex items-end" >
+            <div class="w-full flex flex-col text-center" >
+                <div class="font-bold text-[var(--primary)]" >
+                    {{ company.motto }}
+                </div>
+                <div class="text-sm" >
+                    This Purchase Invoice generated by Vyapar Drishti GST Billing App.
                 </div>
             </div>
         </div>
