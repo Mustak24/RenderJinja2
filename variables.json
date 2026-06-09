@@ -47,6 +47,30 @@
         "tax_amount": 5400
       },
       {
+        "entity": "18%",
+        "taxable_value": 30000,
+        "igst": 0,
+        "cgst": 2700,
+        "sgst": 2700,
+        "tax_amount": 5400
+      },
+      {
+        "entity": "18%",
+        "taxable_value": 30000,
+        "igst": 0,
+        "cgst": 2700,
+        "sgst": 2700,
+        "tax_amount": 5400
+      },
+      {
+        "entity": "18%",
+        "taxable_value": 30000,
+        "igst": 0,
+        "cgst": 2700,
+        "sgst": 2700,
+        "tax_amount": 5400
+      },
+      {
         "entity": "12%",
         "taxable_value": 18000,
         "igst": 0,
@@ -57,6 +81,32 @@
     ],
 
     "items": [
+      {
+        "item_id": "ITEM001",
+        "name": "Laptop Dell Inspiron",
+        "pack": "PCS",
+        "hsn": "84713010",
+        "qty": 2,
+        "rate": 25000,
+        "amount": 50000,
+        "discount_amount": 2000,
+        "tax_rate": "18",
+        "tax_amount": 8640,
+        "total_amount": 56640
+      },
+      {
+        "item_id": "ITEM001",
+        "name": "Laptop Dell Inspiron",
+        "pack": "PCS",
+        "hsn": "84713010",
+        "qty": 2,
+        "rate": 25000,
+        "amount": 50000,
+        "discount_amount": 2000,
+        "tax_rate": "18",
+        "tax_amount": 8640,
+        "total_amount": 56640
+      },
       {
         "item_id": "ITEM001",
         "name": "Laptop Dell Inspiron",
@@ -119,6 +169,9 @@
 
     "email": "support@vyapardrishti.com",
     "tin": "08AAACV1234K1Z8",
+    "cin": "U72200RJ2026PTC123456",
+    "udyam": "UDYAM-RJ-27-0012345",
+    "state_code": "08",
 
     "bank_name": "HDFC Bank",
     "bank_branch": "Udaipur Branch",

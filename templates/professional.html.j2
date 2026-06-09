@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Themeable Purple Invoice - Vyapar Drishti</title>
+    <!-- Outfit Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* CSS Variables to control theme colors and styles */
+        :root {
+            --theme-primary: #5f33e1; /* The purple color in the image */
+            --theme-text: #1f2937;
+            --theme-text-light: #4b5563;
+            --theme-border: #d1d5db;
+            --theme-bg-light: #f9fafb;
+            --theme-font: 'Outfit', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box !important;
+        }
+
+        body {
+            padding: 0 !important;
+            margin: 0 !important;
+            font-family: var(--theme-font) !important;
+            font-size: 10.5px;
+            color: var(--theme-text);
+            background-color: #ffffff;
+        }
+
+        @media print {
+            body {
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+        }
+
+        .invoice-container {
+            width: 190mm !important;
+            margin: 0mm auto !important;
+            background-color: #ffffff;
+        }
+
+        table.items-table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+            font-size: 9.5px !important;
+            page-break-inside: auto;
+            margin-top: 1mm;
+        }
+
+        .items-table tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
+        }
+
+        .items-table th {
+            background-color: var(--theme-primary) !important;
+            color: #ffffff !important;
+            font-weight: 600 !important;
+            font-size: 9.5px;
+            border: 1px solid var(--theme-primary) !important;
+            padding: 5px 4px !important;
+        }
+
+        .items-table td {
+            border: 1px solid var(--theme-border) !important;
+            padding: 5px 4px !important;
+            color: var(--theme-text);
+        }
+
+        .items-table tr.total-row td {
+            border-top: 1.5px solid var(--theme-primary) !important;
+            border-bottom: 1.5px solid var(--theme-primary) !important;
+            background-color: #ffffff !important;
+        }
+
+        .totals-section {
+            page-break-inside: avoid;
+            margin-top: 4mm;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="invoice-container">
+    {# ---------------- HEADER SECTION ---------------- #}
+    {% macro invoice_header() %}
+    <table style="width: 190mm !important;
+            max-height: 85mm !important;
+            vertical-align: top !important;
+            margin: 0mm auto !important;
+            border-collapse: collapse !important;" cellpadding="0" cellspacing="0">
+        <!-- Top Row with Company Details and Logo -->
+        <tr>
+            <td>
+                <table style="width: 100% !important; border-collapse: collapse;" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td style="vertical-align: top; text-align: left;">
+                            <div style="font-size: 18px; font-weight: 700; color: #000; margin-bottom: 1mm;">
+                                {{ company.company_name | upper }}
+                            </div>
+                            <div style="font-size: 10px; color: var(--theme-text-light); line-height: 1.4;">
+                                {{ company.address_1 }} , {{ company.address_2 }}<br>
+                                State: {{ company.state }}{% if company.state_code %} (Code: {{ company.state_code }}){% endif %}<br>
+                                {% if company.cin %}CIN: {{ company.cin }}<br>{% endif %}
+                                {% if company.udyam %}UDYAM: {{ company.udyam }}<br>{% endif %}
+                                Phone No: {{ company.phone.code }} {{ company.phone.number }}<br>
+                                Email: {{ company.email }}<br>
+                                GSTIN: {{ company.tin }}
+                            </div>
+                        </td>
+                        <td style="width: 30mm; text-align: right; vertical-align: top;">
+                            <div style="font-size: 9px; color: var(--theme-text-light); font-weight: 600; margin-bottom: 2mm; text-transform: uppercase; letter-spacing: 0.5px;">
+                                ORIGINAL FOR RECIPIENT
+                            </div>
+                            <div style="width: 28mm; height: 20mm; border: 1px solid var(--theme-border); background-color: var(--theme-bg-light); display: inline-flex; align-items: center; justify-content: center; text-align: center; font-size: 10.5px; color: var(--theme-text-light); font-weight: 500; border-radius: 2px;">
+                                Company<br>Logo
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <!-- Thick Purple Divider Bar -->
+        <tr>
+            <td style="padding-top: 3mm;">
+                <div style="border-top: 2.5px solid var(--theme-primary); width: 100%;"></div>
+            </td>
+        </tr>
+        <!-- Centered Tax Invoice Title -->
+        <tr>
+            <td style="text-align: center; padding: 2.5mm 0 1mm 0;">
+                <div style="font-size: 15px; font-weight: 700; color: var(--theme-primary); letter-spacing: 1.5px;">
+                    TAX INVOICE
+                </div>
+            </td>
+        </tr>
+        <!-- Four-Column Metadata Grid -->
+        <tr>
+            <td style="padding-top: 1mm; padding-bottom: 2mm;">
+                <table style="width: 100%; border-collapse: collapse; border-top: 1px solid var(--theme-border); border-bottom: 1px solid var(--theme-border);" cellpadding="5" cellspacing="0">
+                    <tr>
+                        <td style="width: 25%; vertical-align: top; padding-right: 2mm;">
+                            <div style="font-weight: 700; font-size: 9px; color: #000; margin-bottom: 1mm; text-transform: uppercase;">BILL TO</div>
+                            <div style="font-weight: 700; font-size: 10.5px; color: #000; margin-bottom: 0.5mm;">{{ party.name }}</div>
+                            <div style="font-size: 9.5px; color: var(--theme-text-light); line-height: 1.35;">
+                                {{ party.mailing_address }}<br>
+                                {{ party.mailing_state }} - {{ party.mailing_pincode }} {{ party.mailing_country }}<br>
+                                GSTIN: {{ party.tin }}
+                            </div>
+                        </td>
+                        <td style="width: 25%; vertical-align: top; padding-right: 2mm; padding-left: 2mm; border-left: 1px solid var(--theme-border);">
+                            <div style="font-weight: 700; font-size: 9px; color: #000; margin-bottom: 1mm; text-transform: uppercase;">SHIP TO</div>
+                            <div style="font-weight: 700; font-size: 10.5px; color: #000; margin-bottom: 0.5mm;">{{ party.name }}</div>
+                            <div style="font-size: 9.5px; color: var(--theme-text-light); line-height: 1.35;">
+                                {{ party.mailing_address }}<br>
+                                {{ party.mailing_state }} - {{ party.mailing_pincode }} {{ party.mailing_country }}
+                            </div>
+                        </td>
+                        <td style="width: 25%; vertical-align: top; padding-right: 2mm; padding-left: 2mm; border-left: 1px solid var(--theme-border);">
+                            <div style="font-weight: 700; font-size: 9px; color: #000; margin-bottom: 1.5mm; text-transform: uppercase;">TRANSPORTATION DETAILS</div>
+                            <div style="font-size: 9.5px; color: var(--theme-text-light); line-height: 1.45;">
+                                Transport Mode: {{ invoice.mode_of_transport }}<br>
+                                Vehicle No: {{ invoice.vehicle_number }}
+                            </div>
+                        </td>
+                        <td style="width: 25%; vertical-align: top; padding-left: 2mm; border-left: 1px solid var(--theme-border);">
+                            <div style="font-weight: 700; font-size: 9px; color: #000; margin-bottom: 1.5mm; text-transform: uppercase;">INVOICE DETAILS</div>
+                            <div style="font-size: 9.5px; color: var(--theme-text-light); line-height: 1.45;">
+                                Invoice No: {{ invoice.voucher_number }}<br>
+                                Date: {{ invoice.date }}<br>
+                                Place of Supply: {{ invoice.place_of_supply }}
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+    {% endmacro %}
+
+
+
+    {# ---------------- ITEMS TABLE ---------------- #}
+    {% macro items_table(items, offset=0) %}
+    <table style="width: 190mm !important;
+            vertical-align: top !important;
+            margin: 0mm auto !important;
+            border-collapse: collapse !important;" cellpadding="0" cellspacing="0">
+        <tr>
+            <td style="padding: 0mm !important;">
+                <table class="items-table" cellpadding="5" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th style="width: 5%; text-align: center;">S.No</th>
+                            <th style="width: 33%; text-align: left;">Item Name</th>
+                            <th style="width: 12%; text-align: center;">HSN/SAC</th>
+                            <th style="width: 8%; text-align: center;">Quantity</th>
+                            <th style="width: 7%; text-align: center;">Unit</th>
+                            <th style="width: 9%; text-align: right;">Rate</th>
+                            <th style="width: 7%; text-align: right;">Dis.</th>
+                            <th style="width: 10%; text-align: right;">Taxable Amt</th>
+                            <th style="width: 9%; text-align: right;">GST</th>
+                            <th style="width: 10%; text-align: right; padding-right: 4px !important;">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                        <tr>
+                            <td style="text-align: center;">{{ offset + loop.index }}</td>
+                            <td style="text-align: left; font-weight: 500;">{{ item.name }}</td>
+                            <td style="text-align: center; font-family: monospace;">{{ item.hsn }}</td>
+                            <td style="text-align: center;">{{ item.qty }}</td>
+                            <td style="text-align: center; font-size: 8.5px;">{{ item.pack }}</td>
+                            <td style="text-align: right;">{{ item.rate|float|round(2) }}</td>
+                            <td style="text-align: right;">{{ item.discount_amount|float|round(2) }}</td>
+                            <td style="text-align: right;">{{ item.tax_amount|float|round(2) }}</td>
+                            <td style="text-align: right;">
+                                {% if loop.index0 < invoice.taxes|length %}
+                                    {{ invoice.taxes[loop.index0].tax_amount|float|round(2) }}
+                                {% else %}
+                                    0.00
+                                {% endif %}
+                            </td>
+                            <td style="text-align: right; font-weight: bold; padding-right: 4px !important;">{{ item.total_amount|float|round(2) }}</td>
+                        </tr>
+                        {% endfor %}
+                        
+                        <!-- Totals Summary Row -->
+                        <tr class="total-row">
+                            <td></td>
+                            <td style="font-weight: bold;">Total:</td>
+                            <td></td>
+                            <td style="text-align: center; font-weight: bold;">
+                                {{ items|sum(attribute='qty') }}
+                            </td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td style="text-align: right; font-weight: bold;">
+                                {{ items|sum(attribute='tax_amount')|float|round(2) }}
+                            </td>
+                            <td style="text-align: right; font-weight: bold;">
+                                {% set gst_sum = namespace(val=0.0) %}
+                                {% for item in items %}
+                                    {% if loop.index0 < invoice.taxes|length %}
+                                        {% set gst_sum.val = gst_sum.val + invoice.taxes[loop.index0].tax_amount|float %}
+                                    {% endif %}
+                                {% endfor %}
+                                {{ gst_sum.val|float|round(2) }}
+                            </td>
+                            <td style="text-align: right; font-weight: bold; padding-right: 4px !important;">
+                                {{ items|sum(attribute='total_amount')|float|round(2) }}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+    </table>
+    {% endmacro %}
+
+
+    {# ---------------- TOTALS SECTION ---------------- #}
+    {% macro totals_section(taxes, last_page=False) %}
+    <table style="width: 190mm !important;
+            min-height: 40mm !important;
+            vertical-align: top !important;
+            margin: 0mm auto !important;
+            border-collapse: collapse !important;
+            background-color: #ffffff;" cellpadding="0" cellspacing="0">
+        <tr>
+            <td class="totals-section" style="padding: 4mm 0 !important;">
+                <table style="width: 100% !important;" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <!-- Terms and Conditions List -->
+                        <td style="vertical-align: top !important; width: 110mm !important; padding-right: 4mm;">
+                            <div style="font-weight: bold; font-size: 10.5px; margin-bottom: 2mm;">Terms and Conditions:</div>
+                            <ol style="margin: 0; padding-left: 4mm; font-size: 9.5px; color: var(--theme-text-light); line-height: 1.45;">
+                                <li>This is to certify that we have a valid GST Registration and the above information is true.</li>
+                                <li>Interest @ 18% per annum will be charged on payments due after 15 days from the date of billing.</li>
+                                <li>Please accept goods in proper condition only.</li>
+                                <li>All Disputes & claims will be referred to the court at Udaipur jurisdiction.</li>
+                                <li>Do not make payment without the printed receipt. Please keep the receipt safe.</li>
+                            </ol>
+                        </td>
+
+                        <!-- Invoice Totals breakdown box -->
+                        {% if last_page %}
+                        <td style="vertical-align: top !important; padding-left: 2mm !important;">
+                            <div style="page-break-inside: avoid;">
+                                <table style="width: 78mm !important; font-size: 9.5px !important; border-collapse: collapse; border: 1.5px solid var(--theme-primary); border-radius: 4px; overflow: hidden;" cellpadding="5.5" cellspacing="0">
+                                    <tr style="border-bottom: 1px solid var(--theme-border);">
+                                        <td style="color: var(--theme-text-light); font-weight: 500;">Sub Total</td>
+                                        <td class="text-right bold" style="color: var(--theme-text);">
+                                            {{ invoice["items"]|sum(attribute='tax_amount')|float|round(2) }}
+                                        </td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid var(--theme-border);">
+                                        <td style="color: var(--theme-text-light); font-weight: 500;">CGST@N/A%</td>
+                                        <td class="text-right bold" style="color: var(--theme-text);">
+                                            {{ invoice.totals.cgst|float|round(2) }}
+                                        </td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid var(--theme-border);">
+                                        <td style="color: var(--theme-text-light); font-weight: 500;">SGST@N/A%</td>
+                                        <td class="text-right bold" style="color: var(--theme-text);">
+                                            {{ invoice.totals.sgst|float|round(2) }}
+                                        </td>
+                                    </tr>
+                                    <tr style="border-bottom: 1px solid var(--theme-border);">
+                                        <td style="color: var(--theme-text-light); font-weight: 500;">Round Off</td>
+                                        <td class="text-right bold" style="color: var(--theme-text);">
+                                            {{ invoice.roundoff|float|round(2) }}
+                                        </td>
+                                    </tr>
+                                    <tr style="background-color: var(--theme-primary) !important; color: #ffffff !important;">
+                                        <td class="bold" style="font-size: 11px; padding: 7px 5px !important;">Grand Total</td>
+                                        <td class="text-right bold" style="font-size: 12px; padding: 7px 5px !important;">
+                                            ₹ {{ invoice.grand_total|float|round(2) }}
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </td>
+                        {% endif %}
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+    {% endmacro %}
+
+
+    {# ---------------- FOOTERS SECTION ---------------- #}
+    {% macro invoice_footer() %}
+    <table style="width: 190mm !important;
+            max-height: 60mm !important;
+            vertical-align: bottom !important;
+            margin: 0mm auto !important;
+            border-collapse: collapse !important;" cellpadding="0" cellspacing="0">
+        <!-- Signatures & Payment / QR Section -->
+        <tr>
+            <td style="padding: 4mm 0 !important;">
+                <table style="width: 100% !important; border-collapse: collapse !important;" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <!-- QR Code & Bank Info -->
+                        <td style="width: 60% !important; vertical-align: middle;">
+                            <table style="border-collapse: collapse;" cellpadding="0" cellspacing="0">
+                                <tr>
+                                    <td style="width: 24mm; height: 24mm; border: 1px solid var(--theme-border); text-align: center; vertical-align: middle; background-color: var(--theme-bg-light); font-size: 10px; color: var(--theme-text-light); border-radius: 2px;">
+                                        Company<br>QR
+                                    </td>
+                                    <td style="padding-left: 4mm; vertical-align: middle; line-height: 1.45; font-size: 9.5px; color: var(--theme-text-light);">
+                                        <strong style="font-size: 10.5px; color: #000; display: block; margin-bottom: 0.5mm;">Pay To:</strong>
+                                        Bank Name: {{ company.bank_name }}<br>
+                                        {{ company.bank_branch }}<br>
+                                        A/C No: {{ company.account_no }}<br>
+                                        IFS Code: {{ company.ifsc }}
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                        
+                        <!-- Signature Area -->
+                        <td style="width: 40% !important; text-align: right !important; vertical-align: top !important; padding-right: 2mm;">
+                            <div style="font-weight: 700; font-size: 10.5px; color: #000; margin-bottom: 12mm;">
+                                For {{ company.company_name }}
+                            </div>
+                            <div style="font-size: 10px; color: var(--theme-text-light); font-weight: 500;">
+                                Authorised Signatory
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+
+        <!-- Centered Motto and Tagline -->
+        <tr>
+            <td style="text-align: center !important; padding-top: 4mm !important;">
+                <div style="font-size: 11px !important; font-weight: 700 !important; color: var(--theme-primary); letter-spacing: 0.5px; margin-bottom: 0.5mm; text-transform: uppercase;">
+                    {{ company.motto or "LIFE'S A JOURNEY, KEEP SMILING" }}
+                </div>
+                <div style="font-size: 8px !important; color: var(--theme-text-light);">
+                    This Purchase Invoice generated by Vyapar Drishti GST Billing App.
+                </div>
+            </td>
+        </tr>
+    </table>
+    {% endmacro %}
+
+    {# ---------------- EMPTY SPACE SECTION ---------------- #}
+    {% macro fill_space(height=0, text=' ') %}
+    <table style="width: 190mm !important;
+            vertical-align: top !important;
+            margin: 0mm auto !important;
+            text-align: center !important;
+            border-collapse: collapse !important;" cellpadding="0" cellspacing="0">
+        <tr>
+            <td style="height: {{ ([height, 0] | max) | int }}mm; border: none; font-size: 9.5px; color: var(--theme-text-light); font-style: italic; vertical-align: middle;">{{ text }}</td>
+        </tr>
+    </table>
+    {% endmacro %}
+
+
+    {# ---------------- PAGE LOGIC ---------------- #}
+    {% set total_items = invoice["items"]|length %}
+    {% set total_hsn = invoice["taxes"]|length %}
+    {% set items_per_page = 24 %}
+    {% set hsn_per_page = 12 %}
+    {% set row_height = 5 %} {# each row ≈ 5mm #}
+    {% set page_body_height = 140 %} {# space between header & footer in mm #}
+
+    {# ---------- CASE 1: Few items + few HSN ---------- #}
+    {% if total_items <= 18 and total_hsn <= 4 %} 
+        {{ invoice_header() }} 
+        {{ items_table(invoice["items"]) }} 
+        {% set empty_space = page_body_height - ([total_hsn * row_height, 65]|max) %}
+        {{ fill_space(empty_space) }} 
+        {{ totals_section(invoice["taxes"], last_page=True) }} 
+        {{ invoice_footer() }}
+
+
+    {# ---------- CASE 2: Few items + many HSN ---------- #} 
+    {% elif total_items <= 18 and total_hsn > 4 %}
+        {# Page 1: items only #}
+        {{ invoice_header() }}
+        {{ items_table(invoice["items"]) }}
+        {% set empty_space = page_body_height - (invoice["items"]|length * row_height) %}
+        {% set taxes_height = ([total_hsn * row_height, 65]|max) %}
+        {% if empty_space > taxes_height %}
+            {{ fill_space(empty_space - taxes_height) }}
+            {{ totals_section(invoice["taxes"], last_page=True) }}
+            {{ invoice_footer() }}
+        {% else %}
+            {{ fill_space(empty_space, text='Continued on next page...') }}
+            {{ invoice_footer() }}
+            <div style="page-break-after: always !important;"></div>
+
+            {# Page 2: totals only #}
+            {{ invoice_header() }}
+            {{ totals_section(invoice["taxes"], last_page=True) }}
+            {% set empty_space = page_body_height - ([total_hsn * row_height, 65]|max) %}
+            {{ fill_space(empty_space) }}
+            {{ invoice_footer() }}
+        {% endif %}
+        
+
+    {# ---------- CASE 3: Items 18-24 ---------- #}
+    {% elif total_items > 18 and total_items <= 24 %} 
+        {# Page 1: items #} 
+        {{ invoice_header() }} 
+        {{ items_table(invoice["items"]) }} 
+        {% set empty_space = page_body_height - (invoice["items"]|length * row_height) %} 
+        {{ fill_space(empty_space, text='Continued on next page...' ) }} 
+        {{ invoice_footer() }} 
+        <div style="page-break-after: always !important;"></div>
+
+        {# Page 2: totals #}
+        {{ invoice_header() }}
+        {{ totals_section(invoice["taxes"], last_page=True) }}
+        {% set empty_space = page_body_height - ([total_hsn * row_height, 65]|max) %}
+        {{ fill_space(empty_space) }}
+        {{ invoice_footer() }}
+
+
+    {# ---------- CASE 4: Items > 24 ---------- #}
+    {% else %}
+        {% set page_count = (total_items // items_per_page) + (1 if total_items % items_per_page else 0) %}
+        {% for page in range(page_count) %}
+            {% set start = page * items_per_page %}
+            {% set end = start + items_per_page %}
+            {% set page_items = invoice["items"][start:end] %}
+
+            {{ invoice_header() }}
+            {{ items_table(page_items, offset=start) }}
+
+            {# If this is the last items page, start totals split #}
+            {% if page == page_count - 1 %}
+                {% set hsn_pages = (total_hsn // hsn_per_page) + (1 if total_hsn % hsn_per_page else 0) %}
+                {% for p in range(hsn_pages) %}
+                    {% set hstart = p * hsn_per_page %}
+                    {% set hend = hstart + hsn_per_page %}
+                    {% set hsn_chunk = invoice["taxes"][hstart:hend] %}
+
+                    {% if p > 0 %}
+                        <div style="page-break-after: always !important;"></div>
+                        {{ invoice_header() }}
+                    {% endif %}
+                    {{ totals_section(hsn_chunk, last_page=loop.last) }}
+                    {% set empty_space = page_body_height - ([hsn_chunk|length * row_height, 65]|max) %}
+                    {{ fill_space(empty_space) }}
+                    {{ invoice_footer() }}
+                {% endfor %}
+            {% else %}
+                {% set empty_space = page_body_height - (page_items|length * row_height) %}
+                {{ fill_space(empty_space, text='Continued on next page...') }}
+                {{ invoice_footer() }}
+            {% endif %}
+
+            {% if not loop.last %}
+            <div style="page-break-after: always !important;"></div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+    </div>
+</body>
+
+</html>

@@ -64,15 +64,19 @@ env.filters["slugify"] = filter_slugify
 
 # Paths for files to watch
 CWD = os.getcwd()
-TEMPLATE_FILE = os.path.join(CWD, "template.html.j2")
 VARIABLES_FILE = os.path.join(CWD, "variables.json")
 
-def load_and_render():
-    if not os.path.exists(TEMPLATE_FILE):
+def load_and_render(template_filename="template.html.j2"):
+    if template_filename == "template.html.j2":
+        template_path = os.path.join(CWD, "template.html.j2")
+    else:
+        template_path = os.path.join(CWD, "templates", template_filename)
+
+    if not os.path.exists(template_path):
         return {
             "success": False,
             "error_type": "FileNotFoundError",
-            "message": f"'{TEMPLATE_FILE}' not found in project root.\nPlease create this file in VS Code."
+            "message": f"'{template_path}' not found.\nPlease make sure the file exists."
         }
     if not os.path.exists(VARIABLES_FILE):
         return {
@@ -83,7 +87,7 @@ def load_and_render():
 
     # Read template file
     try:
-        with open(TEMPLATE_FILE, "r", encoding="utf-8") as f:
+        with open(template_path, "r", encoding="utf-8") as f:
             template_str = f.read()
     except Exception as e:
         return {"success": False, "error_type": "ReadError", "message": f"Failed to read template file:\n{str(e)}"}
@@ -137,10 +141,33 @@ async def get_index():
     return "<h3>Error: templates/index.html not found!</h3>"
 
 
+@app.get("/api/templates")
+async def get_templates():
+    templates = []
+    # Check default root template
+    if os.path.exists(os.path.join(CWD, "template.html.j2")):
+        templates.append({"name": "Default (Root)", "filename": "template.html.j2"})
+    # Check templates folder for other templates
+    templates_dir = os.path.join(CWD, "templates")
+    if os.path.exists(templates_dir):
+        for filename in sorted(os.listdir(templates_dir)):
+            if filename.endswith(".html.j2"):
+                name = filename.replace(".html.j2", "").replace("_", " ").title()
+                templates.append({"name": name, "filename": filename})
+    return templates
+
+
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     
+    # Get template filename from query param
+    template_filename = websocket.query_params.get("template", "template.html.j2")
+    if template_filename == "template.html.j2":
+        template_path = os.path.join(CWD, "template.html.j2")
+    else:
+        template_path = os.path.join(CWD, "templates", template_filename)
+
     last_template_mtime = 0.0
     last_vars_mtime = 0.0
 
@@ -149,8 +176,8 @@ async def websocket_endpoint(websocket: WebSocket):
             t_changed = False
             v_changed = False
 
-            if os.path.exists(TEMPLATE_FILE):
-                t_mtime = os.path.getmtime(TEMPLATE_FILE)
+            if os.path.exists(template_path):
+                t_mtime = os.path.getmtime(template_path)
                 if t_mtime != last_template_mtime:
                     last_template_mtime = t_mtime
                     t_changed = True
@@ -162,7 +189,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     v_changed = True
 
             if t_changed or v_changed:
-                result = load_and_render()
+                result = load_and_render(template_filename)
                 await websocket.send_json(result)
 
             await asyncio.sleep(0.3)
