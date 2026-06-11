@@ -112,7 +112,7 @@
     {# ---------------- HEADER SECTION ---------------- #}
     {% macro invoice_header() %}
     <table style="width: 190mm !important;
-            max-height: 85mm !important;
+            height: 85mm !important; flex-shrink: 0;
             vertical-align: top !important;
             margin: 0mm auto !important;
             border: 1px solid #e2e8f0 !important;
@@ -424,7 +424,7 @@
     {# ---------------- FOOTERS SECTION ---------------- #}
     {% macro invoice_footer() %}
     <table style="width: 190mm !important;
-            max-height: 60mm !important;
+            height: 60mm !important; flex-shrink: 0;
             vertical-align: bottom !important;
             margin: 0mm auto !important;
             border: 1px solid #e2e8f0 !important;
@@ -458,12 +458,7 @@
                         </td>
                         <td style="width: 48mm !important; padding: 3mm !important; text-align: center; vertical-align: middle;">
                             {% if company.qr_code_url %}
-                            <img src="{{ company.qr_code_url }}" style="max-height: 22mm; width: auto;" alt="QR Code">
-                            {% else %}
-                            <div style="border: 1px dashed #cbd5e1; border-radius: 6px; padding: 4mm 2mm; background-color: #f8fafc;">
-                                <span style="font-size: 9px; color: #94a3b8; display: block; font-weight: 500;">SCAN TO PAY</span>
-                                <span style="font-size: 7.5px; color: #cbd5e1; display: block; margin-top: 1mm;">QR Code Placeholder</span>
-                            </div>
+                                <img src="{{ company.qr_code_url }}" style="max-height: 22mm; width: auto;" alt="QR Code">
                             {% endif %}
                         </td>
                     </tr>
@@ -507,121 +502,87 @@
 
     {# ---------------- EMPTY SPACE SECTION ---------------- #}
     {% macro fill_space(height=0, text=' ') %}
-    <table style="width: 190mm !important;
-            vertical-align: top !important;
-            margin: 0mm auto !important;
-            border-left: 1px solid #e2e8f0 !important;
-            border-right: 1px solid #e2e8f0 !important;
-            text-align: center !important;
-            border-collapse: collapse !important;" cellpadding="0" cellspacing="0">
-        <tr>
-            <td style="height: {{ ([height, 0] | max) | int }}mm; border: none; font-size: 9px; color: #cbd5e1; vertical-align: middle;">{{ text }}</td>
-        </tr>
-    </table>
+    <div style="flex-grow: 1; display: flex; flex-direction: column; width: 190mm !important; margin: 0 auto !important; border-left: 1px solid #e2e8f0 !important; border-right: 1px solid #e2e8f0 !important; box-sizing: border-box !important;">
+        <table style="width: 100% !important;
+                vertical-align: top !important;
+                margin: 0 !important;
+                text-align: center !important;
+                border-collapse: collapse !important;" cellpadding="0" cellspacing="0">
+            <tr>
+                <td style=" border: none; font-size: 9px; color: #cbd5e1; vertical-align: middle;">{{ text }}</td>
+            </tr>
+        </table>
+    </div>
     {% endmacro %}
 
 
     {# ---------------- PAGE LOGIC ---------------- #}
     {% set total_items = invoice["items"]|length %}
     {% set total_hsn = invoice["taxes"]|length %}
-    {% set items_per_page = 24 %}
-    {% set hsn_per_page = 12 %}
-    {% set row_height = 5 %} {# each row ≈ 5mm #}
-    {% set page_body_height = 140 %} {# space between header & footer in mm #}
-
-    {# ---------- CASE 1: Few items + few HSN ---------- #}
-    {% if total_items <= 18 and total_hsn <= 4 %} 
-        {{ invoice_header() }} 
-        {{ items_table(invoice["items"]) }} 
-        {% set empty_space = page_body_height - ([total_hsn * row_height, 65]|max) %}
-        {{ fill_space(empty_space) }} 
-        {{ totals_section(invoice["taxes"], last_page=True) }} 
-        {{ invoice_footer() }}
-
-
-    {# ---------- CASE 2: Few items + many HSN ---------- #} 
-    {% elif total_items <= 18 and total_hsn > 4 %}
-        {# Page 1: items only #}
-        {{ invoice_header() }}
-        {{ items_table(invoice["items"]) }}
-        {% set empty_space = page_body_height - (invoice["items"]|length * row_height) %}
-        {% set taxes_height = ([total_hsn * row_height, 65]|max) %}
-        {% if empty_space > taxes_height %}
-            {{ fill_space(empty_space - taxes_height) }}
-            {{ totals_section(invoice["taxes"], last_page=True) }}
-            {{ invoice_footer() }}
-        {% else %}
-            {{ fill_space(empty_space, text='Continued on next page...') }}
-            {{ invoice_footer() }}
-            <div style="page-break-after: always !important;"></div>
-
-            {# Page 2: totals only #}
-            {{ invoice_header() }}
-            {{ totals_section(invoice["taxes"], last_page=True) }}
-            {% set empty_space = page_body_height - ([total_hsn * row_height, 65]|max) %}
-            {{ fill_space(empty_space) }}
-            {{ invoice_footer() }}
-        {% endif %}
+    
+    {# Configure row heights dynamically. Modify these if template padding changes. #}
+    {% set row_height = 6 %} {# Reduced to reflect actual ~5.5mm physical row height #}
+    {% set hsn_row_height = 5 %} 
+    {% set items_header_height = 12 %} 
+    {% set totals_base_height = 45 %} {# Base height for Bank Details and Totals block #}
+    {% set page_body_height = 135 %} {# Increased available body space based on header/footer measurements #}
+    
+    {% set items_per_page = ((page_body_height - items_header_height) // row_height) | int %}
+    {% set hsn_per_page = ((page_body_height - totals_base_height) // hsn_row_height) | int %}
+    
+    {% set items_pages = (total_items // items_per_page) + (1 if total_items % items_per_page > 0 else 0) %}
+    {% if items_pages == 0 %}{% set items_pages = 1 %}{% endif %}
+    
+    {% set taxes_total_height = totals_base_height + (total_hsn * hsn_row_height) %}
+    
+    {% for page in range(items_pages) %}
+        <div style="min-height: 275mm; display: flex; flex-direction: column; background-color: #ffffff; page-break-after: always; page-break-inside: avoid; box-sizing: border-box;">
+        {% set start = page * items_per_page %}
+        {% set end = start + items_per_page %}
+        {% set page_items = invoice["items"][start:end] %}
         
-
-    {# ---------- CASE 3: Items 18-24 ---------- #}
-    {% elif total_items > 18 and total_items <= 24 %} 
-        {# Page 1: items #} 
-        {{ invoice_header() }} 
-        {{ items_table(invoice["items"]) }} 
-        {% set empty_space = page_body_height - (invoice["items"]|length * row_height) %} 
-        {{ fill_space(empty_space, text='Continued on next page...' ) }} 
-        {{ invoice_footer() }} 
-        <div style="page-break-after: always !important;"></div>
-
-        {# Page 2: totals #}
         {{ invoice_header() }}
-        {{ totals_section(invoice["taxes"], last_page=True) }}
-        {% set empty_space = page_body_height - ([total_hsn * row_height, 65]|max) %}
-        {{ fill_space(empty_space) }}
-        {{ invoice_footer() }}
-
-
-    {# ---------- CASE 4: Items > 24 ---------- #}
-    {% else %}
-        {% set page_count = (total_items // items_per_page) + (1 if total_items % items_per_page else 0) %}
-        {% for page in range(page_count) %}
-            {% set start = page * items_per_page %}
-            {% set end = start + items_per_page %}
-            {% set page_items = invoice["items"][start:end] %}
-
-            {{ invoice_header() }}
-            {{ items_table(page_items, offset=start) }}
-
-            {# If this is the last items page, start totals split #}
-            {% if page == page_count - 1 %}
-                {% set hsn_pages = (total_hsn // hsn_per_page) + (1 if total_hsn % hsn_per_page else 0) %}
+        {{ items_table(page_items, offset=start) }}
+        
+        {% if loop.last %}
+            {% set space_used_by_items = items_header_height + (page_items|length * row_height) %}
+            {% set remaining_space = page_body_height - space_used_by_items %}
+            
+            {% if remaining_space >= taxes_total_height %}
+                {{ fill_space(remaining_space - taxes_total_height) }}
+                {{ totals_section(invoice["taxes"], last_page=True) }}
+                {{ invoice_footer() }}
+                </div>
+            {% else %}
+                {{ fill_space(remaining_space, text='Continued on next page...') }}
+                {{ invoice_footer() }}
+                </div>
+                
+                {% set hsn_pages = (total_hsn // hsn_per_page) + (1 if total_hsn % hsn_per_page > 0 else 0) %}
+                {% if hsn_pages == 0 %}{% set hsn_pages = 1 %}{% endif %}
+                
                 {% for p in range(hsn_pages) %}
+                    <div style="min-height: 275mm; display: flex; flex-direction: column; background-color: #ffffff; page-break-after: always; page-break-inside: avoid; box-sizing: border-box;">
+                    {{ invoice_header() }}
                     {% set hstart = p * hsn_per_page %}
                     {% set hend = hstart + hsn_per_page %}
                     {% set hsn_chunk = invoice["taxes"][hstart:hend] %}
-
-                    {% if p > 0 %}
-                        <div style="page-break-after: always !important;"></div>
-                        {{ invoice_header() }}
-                    {% endif %}
+                    
+                    {{ fill_space(text='') }}
                     {{ totals_section(hsn_chunk, last_page=loop.last) }}
-                    {% set empty_space = page_body_height - ([hsn_chunk|length * row_height, 65]|max) %}
-                    {{ fill_space(empty_space) }}
                     {{ invoice_footer() }}
+                    </div>
                 {% endfor %}
-            {% else %}
-                {% set empty_space = page_body_height - (page_items|length * row_height) %}
-                {{ fill_space(empty_space, text='Continued on next page...') }}
-                {{ invoice_footer() }}
             {% endif %}
+            
+        {% else %}
+            {% set space_used_by_items = items_header_height + (page_items|length * row_height) %}
+            {{ fill_space(page_body_height - space_used_by_items, text='Continued on next page...') }}
+            {{ invoice_footer() }}
+            </div>
+        {% endif %}
+    {% endfor %}
 
-            {% if not loop.last %}
-            <div style="page-break-after: always !important;"></div>
-            {% endif %}
-        {% endfor %}
-    {% endif %}
     </div>
 </body>
-
 </html>
