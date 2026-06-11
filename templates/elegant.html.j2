@@ -4,10 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <title>Elegant Invoice - Vyapar Drishti</title>
-    <!-- Classic Serif Font -->
+    <!-- Classic & Modern Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap" rel="stylesheet">
     <style>
         * {
             box-sizing: border-box !important;
@@ -16,10 +16,13 @@
         body {
             padding: 0 !important;
             margin: 0 !important;
-            font-family: 'Lora', Georgia, serif !important;
-            font-size: 11px;
-            color: #292524;
+            font-family: 'Inter', sans-serif !important;
+            font-size: 10px;
+            color: #334155;
             background-color: #ffffff;
+            -webkit-font-smoothing: antialiased;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
         }
 
         @media print {
@@ -52,21 +55,21 @@
         }
 
         .items-table th {
-            border-bottom: 1px solid #78716c !important;
-            border-top: 1px solid #e7e5e4 !important;
-            color: #44403c !important;
+            border-bottom: 1px solid #0f172a !important;
+            border-top: 1px solid #0f172a !important;
+            color: #0f172a !important;
             font-family: 'Playfair Display', serif;
-            font-weight: 600 !important;
-            font-style: italic;
+            font-weight: 700 !important;
             font-size: 10px;
             padding: 6px 4px !important;
-            text-transform: capitalize;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .items-table td {
-            border-bottom: 1px solid #f5f5f4 !important;
+            border-bottom: 1px solid #f1f5f9 !important;
             padding: 6px 4px !important;
-            color: #57534e;
+            color: #475569;
         }
 
         .totals-section {
@@ -99,13 +102,13 @@
         }
 
         .double-divider {
-            border-top: 3px double #78716c !important;
+            border-top: 3px double #1e293b !important;
             height: 0;
             margin: 2px 0;
         }
 
         .classic-border {
-            border: 1px solid #d6d3d1 !important;
+            border: 1px solid #cbd5e1 !important;
         }
     </style>
 </head>
@@ -118,19 +121,19 @@
             max-height: 85mm !important;
             vertical-align: top !important;
             margin: 0mm auto !important;
-            border: 1px solid #78716c !important;
+            border: 1px solid #1e293b !important;
             border-collapse: collapse !important;" cellpadding="0" cellspacing="0">
         <tr>
             <td>
-                <table style="width: 100% !important; border-collapse: collapse; border-bottom: 1px solid #78716c;" cellpadding="5" cellspacing="0">
+                <table style="width: 100% !important; border-collapse: collapse; border-bottom: 1px solid #1e293b;" cellpadding="6" cellspacing="0">
                     <tr>
-                        <td style="width: 60mm !important; font-size: 9.5px; color: #78716c; font-style: italic;">
-                            GSTIN: {{ company.tin }}
+                        <td style="width: 60mm !important; font-size: 9px; color: #64748b; font-style: italic;">
+                            GSTIN: <strong style="color: #334155;">{{ company.tin }}</strong>
                         </td>
-                        <td class="serif-header" style="text-align: center !important; font-size: 16px; font-weight: 700; color: #292524; letter-spacing: 2px;">
+                        <td class="serif-header" style="text-align: center !important; font-size: 17px; font-weight: 600; color: #0f172a; letter-spacing: 4px;">
                             T A X &nbsp; I N V O I C E
                         </td>
-                        <td style="width: 60mm !important; text-align: right !important; font-size: 9.5px; color: #78716c; font-style: italic;">
+                        <td style="width: 60mm !important; text-align: right !important; font-size: 9px; color: #64748b; font-style: italic;">
                             Original Copy
                         </td>
                     </tr>
@@ -141,25 +144,25 @@
             <td>
                 <table style="width: 100% !important; border-collapse: collapse;" cellpadding="0" cellspacing="0">
                     <!-- Company Details -->
-                    <tr style="border-bottom: 1px solid #78716c !important;">
-                        <td colspan="2" style="padding: 4mm !important; text-align: center;">
-                            <span class="serif-header" style="font-size: 22px !important; font-weight: 700 !important; color: #1c1917 !important; letter-spacing: 0.5px; display: block;">
+                    <tr style="border-bottom: 1px solid #1e293b !important;">
+                        <td colspan="2" style="padding: 5mm !important; text-align: center;">
+                            <span class="serif-header" style="font-size: 24px !important; font-weight: 700 !important; color: #0f172a !important; letter-spacing: 0.5px; display: block;">
                                 {{ company.company_name }}
                             </span>
-                            <div class="double-divider" style="width: 60%; margin: 2mm auto;"></div>
-                            <span style="font-size: 11px; color: #57534e; display: block; padding-top: 1mm;">
+                            <div class="double-divider" style="width: 50%; margin: 2.5mm auto; border-top-color: #1e293b !important;"></div>
+                            <span style="font-size: 10.5px; color: #475569; display: block; padding-top: 1mm;">
                                 {{ company.address_1 }}, {{ company.address_2 }}
                             </span>
-                            <span style="font-size: 11px; color: #57534e; display: block;">
+                            <span style="font-size: 10.5px; color: #475569; display: block;">
                                 {{ company.state }}, {{ company.country }} - {{ company.pinCode }}{% if company.state_code %} &nbsp;|&nbsp; State Code: {{ company.state_code }}{% endif %}
                             </span>
                             {% if company.cin or company.udyam %}
-                            <span style="font-size: 11px; color: #57534e; display: block; font-style: italic;">
+                            <span style="font-size: 10px; color: #64748b; display: block; padding-top: 0.5mm;">
                                 {% if company.cin %}CIN: {{ company.cin }}{% endif %}{% if company.cin and company.udyam %} &nbsp;|&nbsp; {% endif %}{% if company.udyam %}UDYAM: {{ company.udyam }}{% endif %}
                             </span>
                             {% endif %}
-                            <span style="font-size: 10.5px; color: #78716c; display: block; padding-top: 1mm; font-style: italic;">
-                                phone: {{ company.phone.code }} {{ company.phone.number }} &nbsp;|&nbsp; email: {{ company.email }}
+                            <span style="font-size: 10px; color: #64748b; display: block; padding-top: 1.5mm;">
+                                <span class="italic">phone:</span> <strong style="color:#334155;">{{ company.phone.code }} {{ company.phone.number }}</strong> &nbsp;|&nbsp; <span class="italic">email:</span> <strong style="color:#334155;">{{ company.email }}</strong>
                             </span>
                         </td>
                     </tr>
@@ -169,70 +172,70 @@
                         <td style="width: 50% !important; padding: 4mm !important; vertical-align: top !important;">
                             <table style="text-align: left !important; width: 100% !important; border-collapse: collapse;" cellpadding="1" cellspacing="0">
                                 <tr>
-                                    <td class="serif-header italic" style="font-size: 11px; color: #78716c; padding-bottom: 1mm;">
+                                    <td class="serif-header italic" style="font-size: 11px; color: #64748b; padding-bottom: 1.5mm;">
                                         Invoice To:
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td class="serif-header bold" style="font-size: 16px !important; color: #1c1917 !important; padding-bottom: 1mm;">
+                                    <td class="serif-header bold" style="font-size: 16px !important; color: #0f172a !important; padding-bottom: 1.5mm;">
                                         {{ party.name }}
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td style="color: #44403c; line-height: 1.4;">
+                                    <td style="color: #334155; line-height: 1.4;">
                                         {{ party.mailing_address }}
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td style="color: #44403c;">
+                                    <td style="color: #334155;">
                                         {{ party.mailing_state }}, {{ party.mailing_country }} - {{ party.mailing_pincode }}
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td style="color: #57534e; padding-top: 1.5mm;">
-                                        <span class="italic" style="color: #78716c;">email:</span> {{ party.email }}
+                                    <td style="color: #475569; padding-top: 2mm;">
+                                        <span class="italic" style="color: #94a3b8;">email:</span> {{ party.email }}
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td style="color: #57534e;">
-                                        <span class="italic" style="color: #78716c;">GSTIN / TIN:</span> <strong style="color: #292524;">{{ party.tin }}</strong>
+                                    <td style="color: #475569;">
+                                        <span class="italic" style="color: #94a3b8;">GSTIN / TIN:</span> <strong style="color: #0f172a;">{{ party.tin }}</strong>
                                     </td>
                                 </tr>
                             </table>
                         </td>
 
                         <!-- Invoice Details -->
-                        <td style="width: 50% !important; border-left: 1px solid #78716c !important; padding: 4mm !important; vertical-align: top !important; background-color: #fafaf9;">
-                            <table style="text-align: left !important; width: 100% !important; border-collapse: collapse;" cellpadding="2.5" cellspacing="0">
+                        <td style="width: 50% !important; border-left: 1px solid #1e293b !important; padding: 4mm !important; vertical-align: top !important; background-color: #f8fafc;">
+                            <table style="text-align: left !important; width: 100% !important; border-collapse: collapse;" cellpadding="3" cellspacing="0">
                                 <tr>
-                                    <td class="italic" style="width: 50% !important; color: #78716c;">Invoice No.</td>
-                                    <td style="width: 5% !important; color: #d6d3d1;">:</td>
-                                    <td class="bold serif-header" style="color: #1c1917; font-size: 12px;">{{ invoice.voucher_number }}</td>
+                                    <td class="italic" style="width: 45% !important; color: #64748b;">Invoice No.</td>
+                                    <td style="width: 5% !important; color: #cbd5e1;">:</td>
+                                    <td class="bold serif-header" style="color: #0f172a; font-size: 13px;">{{ invoice.voucher_number }}</td>
                                 </tr>
                                 <tr>
-                                    <td class="italic" style="color: #78716c;">Date of Issue</td>
-                                    <td style="color: #d6d3d1;">:</td>
-                                    <td style="color: #292524;">{{ invoice.date }}</td>
+                                    <td class="italic" style="color: #64748b;">Date of Issue</td>
+                                    <td style="color: #cbd5e1;">:</td>
+                                    <td class="bold" style="color: #1e293b;">{{ invoice.date }}</td>
                                 </tr>
                                 <tr>
-                                    <td class="italic" style="color: #78716c;">Place of Supply</td>
-                                    <td style="color: #d6d3d1;">:</td>
-                                    <td style="color: #292524;">{{ invoice.place_of_supply }}</td>
+                                    <td class="italic" style="color: #64748b;">Place of Supply</td>
+                                    <td style="color: #cbd5e1;">:</td>
+                                    <td style="color: #334155;">{{ invoice.place_of_supply }}</td>
                                 </tr>
                                 <tr>
-                                    <td class="italic" style="color: #78716c;">Mode of Transport</td>
-                                    <td style="color: #d6d3d1;">:</td>
-                                    <td style="color: #292524;">{{ invoice.mode_of_transport }}</td>
+                                    <td class="italic" style="color: #64748b;">Mode of Transport</td>
+                                    <td style="color: #cbd5e1;">:</td>
+                                    <td style="color: #334155;">{{ invoice.mode_of_transport }}</td>
                                 </tr>
                                 <tr>
-                                    <td class="italic" style="color: #78716c;">Vehicle No.</td>
-                                    <td style="color: #d6d3d1;">:</td>
-                                    <td style="color: #292524;">{{ invoice.vehicle_number }}</td>
+                                    <td class="italic" style="color: #64748b;">Vehicle No.</td>
+                                    <td style="color: #cbd5e1;">:</td>
+                                    <td style="color: #334155;">{{ invoice.vehicle_number }}</td>
                                 </tr>
                                 <tr>
-                                    <td class="italic" style="color: #78716c;">Payment Method</td>
-                                    <td style="color: #d6d3d1;">:</td>
-                                    <td class="italic" style="color: #44403c; font-weight: 500;">{{ invoice.payment_mode }}</td>
+                                    <td class="italic" style="color: #64748b;">Payment Method</td>
+                                    <td style="color: #cbd5e1;">:</td>
+                                    <td class="bold" style="color: #1e293b;">{{ invoice.payment_mode }}</td>
                                 </tr>
                             </table>
                         </td>
@@ -250,8 +253,8 @@
     <table style="width: 190mm !important;
             vertical-align: top !important;
             margin: 0mm auto !important;
-            border-left: 1px solid #78716c !important;
-            border-right: 1px solid #78716c !important;
+            border-left: 1px solid #1e293b !important;
+            border-right: 1px solid #1e293b !important;
             border-collapse: collapse !important;" cellpadding="0" cellspacing="0">
         <tr>
             <td style="padding: 0mm !important;">
@@ -268,23 +271,23 @@
                             <th style="width: 7%; text-align: right;">Disc.</th>
                             <th style="width: 8%; text-align: center;">Tax %</th>
                             <th style="width: 9%; text-align: right;">Tax Amt</th>
-                            <th class="serif-header" style="width: 11%; text-align: right; padding-right: 6px !important; font-weight: bold;">Amount</th>
+                            <th class="serif-header" style="width: 11%; text-align: right; padding-right: 6px !important; font-weight: bold; font-size: 11px;">Amount</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for item in items %}
-                        <tr style="background-color: {% if loop.index0 % 2 == 1 %}#fafaf9{% else %}#ffffff{% endif %};">
-                            <td class="text-center" style="color: #78716c; font-size: 9px;">{{ offset + loop.index }}</td>
-                            <td class="bold serif-header" style="color: #292524;">{{ item.name }}</td>
-                            <td class="text-center" style="font-family: monospace; color: #57534e;">{{ item.hsn }}</td>
-                            <td class="text-center">{{ item.qty }}</td>
-                            <td class="text-center" style="color: #78716c; font-size: 8.5px;">{{ item.pack }}</td>
-                            <td class="text-right">{{ item.rate|float|round(2) }}</td>
-                            <td class="text-right">{{ item.amount|float|round(2) }}</td>
-                            <td class="text-right" style="color: #a8a29e;">{{ item.discount_amount|float|round(2) }}</td>
-                            <td class="text-center" style="color: #78716c;">{{ item.tax_rate }}%</td>
-                            <td class="text-right">{{ item.tax_amount|float|round(2) }}</td>
-                            <td class="text-right bold serif-header" style="color: #1c1917; padding-right: 6px !important;">{{ item.total_amount|float|round(2) }}</td>
+                        <tr style="background-color: {% if loop.index0 % 2 == 1 %}#f8fafc{% else %}#ffffff{% endif %};">
+                            <td class="text-center" style="color: #64748b; font-size: 9px;">{{ offset + loop.index }}</td>
+                            <td class="bold" style="color: #0f172a;">{{ item.name }}</td>
+                            <td class="text-center" style="font-family: monospace; color: #475569;">{{ item.hsn }}</td>
+                            <td class="text-center" style="color: #1e293b;">{{ item.qty }}</td>
+                            <td class="text-center" style="color: #64748b; font-size: 8.5px;">{{ item.pack }}</td>
+                            <td class="text-right" style="color: #334155;">{{ item.rate|float|round(2) }}</td>
+                            <td class="text-right" style="color: #334155;">{{ item.amount|float|round(2) }}</td>
+                            <td class="text-right" style="color: #94a3b8;">{{ item.discount_amount|float|round(2) }}</td>
+                            <td class="text-center" style="color: #64748b;">{{ item.tax_rate }}%</td>
+                            <td class="text-right" style="color: #475569;">{{ item.tax_amount|float|round(2) }}</td>
+                            <td class="text-right bold" style="color: #0f172a; padding-right: 6px !important;">{{ item.total_amount|float|round(2) }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -301,22 +304,22 @@
             min-height: 40mm !important;
             vertical-align: top !important;
             margin: 0mm auto !important;
-            border-left: 1px solid #78716c !important;
-            border-right: 1px solid #78716c !important;
+            border-left: 1px solid #1e293b !important;
+            border-right: 1px solid #1e293b !important;
             border-collapse: collapse !important;
             background-color: #ffffff;" cellpadding="0" cellspacing="0">
         <tr>
-            <td class="totals-section" style="padding: 4mm !important; border-top: 1px solid #78716c;">
+            <td class="totals-section" style="padding: 4mm !important; border-top: 1px solid #1e293b;">
                 <table style="width: 100% !important;" cellpadding="0" cellspacing="0">
                     <tr>
                         <!-- Tax Summary Table -->
                         <td style="vertical-align: top !important; width: 120mm !important;">
                             {% if invoice.tax_code == 'GST' %}
-                            <table style="width: 100% !important; border-collapse: collapse !important; border: 1px solid #d6d3d1 !important;" cellpadding="4" cellspacing="0">
+                            <table style="width: 100% !important; border-collapse: collapse !important; border: 1px solid #cbd5e1 !important;" cellpadding="4" cellspacing="0">
                                 <thead>
-                                    <tr style="background-color: #fafaf9 !important; border-bottom: 1.5px solid #a8a29e !important;">
+                                    <tr style="background-color: #f8fafc !important; border-bottom: 1.5px solid #94a3b8 !important;">
                                         {% for header in invoice.tax_headers %}
-                                        <th class="serif-header italic" style="font-size: 9px !important; text-align: center !important; font-weight: 500 !important; color: #44403c !important; border: 1px solid #d6d3d1 !important; padding: 5px !important;">
+                                        <th class="serif-header" style="font-size: 9px !important; text-align: center !important; font-weight: 600 !important; color: #1e293b !important; border: 1px solid #cbd5e1 !important; padding: 5px !important; text-transform: uppercase; letter-spacing: 0.5px;">
                                             {{ header }}
                                         </th>
                                         {% endfor %}
@@ -325,23 +328,23 @@
                                 <tbody>
                                     {% for tax in taxes %}
                                     <tr>
-                                        <td style="border: 1px solid #d6d3d1 !important; font-size: 9px !important; text-align: center !important; color: #57534e;">{{ tax.entity }}</td>
-                                        <td style="border: 1px solid #d6d3d1 !important; font-size: 9px !important; text-align: right !important; padding-right: 4px !important; color: #57534e;">{{ tax.taxable_value|float|round(2) }}</td>
-                                        <td style="border: 1px solid #d6d3d1 !important; font-size: 9px !important; text-align: right !important; padding-right: 4px !important; color: #78716c;">{{ tax.igst|float|round(2) }}</td>
-                                        <td style="border: 1px solid #d6d3d1 !important; font-size: 9px !important; text-align: right !important; padding-right: 4px !important; color: #78716c;">{{ tax.cgst|float|round(2) }}</td>
-                                        <td style="border: 1px solid #d6d3d1 !important; font-size: 9px !important; text-align: right !important; padding-right: 4px !important; color: #78716c;">{{ tax.sgst|float|round(2) }}</td>
-                                        <td style="border: 1px solid #d6d3d1 !important; font-size: 9px !important; text-align: right !important; padding-right: 4px !important; color: #292524; font-weight: 500;">{{ tax.tax_amount|float|round(2) }}</td>
+                                        <td style="border: 1px solid #e2e8f0 !important; font-size: 9px !important; text-align: center !important; color: #475569;">{{ tax.entity }}</td>
+                                        <td style="border: 1px solid #e2e8f0 !important; font-size: 9px !important; text-align: right !important; padding-right: 4px !important; color: #475569;">{{ tax.taxable_value|float|round(2) }}</td>
+                                        <td style="border: 1px solid #e2e8f0 !important; font-size: 9px !important; text-align: right !important; padding-right: 4px !important; color: #64748b;">{{ tax.igst|float|round(2) }}</td>
+                                        <td style="border: 1px solid #e2e8f0 !important; font-size: 9px !important; text-align: right !important; padding-right: 4px !important; color: #64748b;">{{ tax.cgst|float|round(2) }}</td>
+                                        <td style="border: 1px solid #e2e8f0 !important; font-size: 9px !important; text-align: right !important; padding-right: 4px !important; color: #64748b;">{{ tax.sgst|float|round(2) }}</td>
+                                        <td style="border: 1px solid #e2e8f0 !important; font-size: 9px !important; text-align: right !important; padding-right: 4px !important; color: #0f172a; font-weight: 500;">{{ tax.tax_amount|float|round(2) }}</td>
                                     </tr>
                                     {% endfor %}
 
                                     {% if last_page %}
-                                    <tr style="background-color: #fafaf9 !important; border-top: 1.5px solid #78716c !important; font-weight: bold;">
-                                        <td class="serif-header italic" style="border: 1px solid #78716c !important; font-size: 9px !important; text-align: center !important; color: #1c1917;">Total</td>
-                                        <td style="border: 1px solid #78716c !important; font-size: 9px !important; text-align: right !important; padding-right: 4px !important; color: #1c1917;">{{ invoice.totals.taxable_value|float|round(2) }}</td>
-                                        <td style="border: 1px solid #78716c !important; font-size: 9px !important; text-align: right !important; padding-right: 4px !important; color: #57534e;">{{ invoice.totals.igst|float|round(2) }}</td>
-                                        <td style="border: 1px solid #78716c !important; font-size: 9px !important; text-align: right !important; padding-right: 4px !important; color: #57534e;">{{ invoice.totals.cgst|float|round(2) }}</td>
-                                        <td style="border: 1px solid #78716c !important; font-size: 9px !important; text-align: right !important; padding-right: 4px !important; color: #57534e;">{{ invoice.totals.sgst|float|round(2) }}</td>
-                                        <td style="border: 1px solid #78716c !important; font-size: 9px !important; text-align: right !important; padding-right: 4px !important; color: #1c1917;">{{ invoice.totals.tax_amount|float|round(2) }}</td>
+                                    <tr style="background-color: #f8fafc !important; border-top: 1.5px solid #1e293b !important; font-weight: bold;">
+                                        <td class="serif-header italic" style="border: 1px solid #cbd5e1 !important; font-size: 10px !important; text-align: center !important; color: #0f172a;">Total</td>
+                                        <td style="border: 1px solid #cbd5e1 !important; font-size: 9.5px !important; text-align: right !important; padding-right: 4px !important; color: #0f172a;">{{ invoice.totals.taxable_value|float|round(2) }}</td>
+                                        <td style="border: 1px solid #cbd5e1 !important; font-size: 9.5px !important; text-align: right !important; padding-right: 4px !important; color: #334155;">{{ invoice.totals.igst|float|round(2) }}</td>
+                                        <td style="border: 1px solid #cbd5e1 !important; font-size: 9.5px !important; text-align: right !important; padding-right: 4px !important; color: #334155;">{{ invoice.totals.cgst|float|round(2) }}</td>
+                                        <td style="border: 1px solid #cbd5e1 !important; font-size: 9.5px !important; text-align: right !important; padding-right: 4px !important; color: #334155;">{{ invoice.totals.sgst|float|round(2) }}</td>
+                                        <td style="border: 1px solid #cbd5e1 !important; font-size: 9.5px !important; text-align: right !important; padding-right: 4px !important; color: #0f172a;">{{ invoice.totals.tax_amount|float|round(2) }}</td>
                                     </tr>
                                     {% endif %}
                                 </tbody>
@@ -350,15 +353,15 @@
 
                             <!-- Bank Details -->
                             {% if last_page %}
-                            <table style="width: 100% !important; margin-top: 4mm !important; border-collapse: collapse !important; border: 1px solid #d6d3d1;" cellpadding="5" cellspacing="0">
+                            <table style="width: 100% !important; margin-top: 4mm !important; border-collapse: collapse !important; border: 1px solid #cbd5e1;" cellpadding="5" cellspacing="0">
                                 <tr>
-                                    <td style="background-color: #fafaf9; padding: 6px !important;">
-                                        <span class="serif-header italic bold" style="color: #78716c; font-size: 9.5px; display: block; margin-bottom: 1mm; border-bottom: 1px solid #e7e5e4; padding-bottom: 0.5mm;">Payment Remittance Details</span>
-                                        <span style="color: #57534e; font-size: 9.5px; line-height: 1.5; display: block;">
-                                            Bank Name: <strong>{{ company.bank_name }}</strong> &nbsp;&bull;&nbsp; 
-                                            Account Number: <strong>{{ company.account_no }}</strong><br>
-                                            IFSC Code: <strong>{{ company.ifsc }}</strong> &nbsp;&bull;&nbsp; 
-                                            Account Name: <strong>{{ company.account_name }}</strong>
+                                    <td style="background-color: #f8fafc; padding: 6px !important; border-left: 3px solid #1e293b;">
+                                        <span class="serif-header italic bold" style="color: #0f172a; font-size: 10px; display: block; margin-bottom: 1.5mm;">Payment Remittance Details</span>
+                                        <span style="color: #475569; font-size: 9.5px; line-height: 1.6; display: block;">
+                                            Bank Name: <strong style="color: #0f172a;">{{ company.bank_name }}</strong> &nbsp;&bull;&nbsp; 
+                                            Account Number: <strong style="color: #0f172a;">{{ company.account_no }}</strong><br>
+                                            IFSC Code: <strong style="color: #0f172a;">{{ company.ifsc }}</strong> &nbsp;&bull;&nbsp; 
+                                            Account Name: <strong style="color: #0f172a;">{{ company.account_name }}</strong>
                                         </span>
                                     </td>
                                 </tr>
@@ -370,34 +373,34 @@
                         {% if last_page %}
                         <td style="vertical-align: top !important; padding-left: 4mm !important;">
                             <div style="page-break-inside: avoid;">
-                                <table style="width: 58mm !important; font-size: 9.5px !important; border-collapse: collapse; border: 1px solid #78716c;" cellpadding="5" cellspacing="0">
-                                    <tr style="border-bottom: 1px solid #e7e5e4 !important;">
-                                        <td class="italic" style="color: #78716c;">Sub Total</td>
-                                        <td class="text-right bold" style="color: #44403c;">{{ invoice.total|float|round(2) }}</td>
+                                <table style="width: 58mm !important; font-size: 10px !important; border-collapse: collapse; border: 1px solid #1e293b;" cellpadding="5" cellspacing="0">
+                                    <tr style="border-bottom: 1px solid #e2e8f0 !important;">
+                                        <td class="italic" style="color: #64748b;">Sub Total</td>
+                                        <td class="text-right bold" style="color: #1e293b;">{{ invoice.total|float|round(2) }}</td>
                                     </tr>
-                                    <tr style="border-bottom: 1px solid #e7e5e4 !important;">
-                                        <td class="italic" style="color: #78716c;">Discount</td>
-                                        <td class="text-right bold" style="color: #a8a29e;">-{{ invoice.discount|float|round(2) }}</td>
+                                    <tr style="border-bottom: 1px solid #e2e8f0 !important;">
+                                        <td class="italic" style="color: #64748b;">Discount</td>
+                                        <td class="text-right bold" style="color: #94a3b8;">-{{ invoice.discount|float|round(2) }}</td>
                                     </tr>
-                                    <tr style="border-bottom: 1px solid #e7e5e4 !important;">
-                                        <td class="italic" style="color: #78716c;">Taxable Value</td>
-                                        <td class="text-right bold" style="color: #44403c;">{{ (invoice.total - invoice.discount)|float|round(2) }}</td>
+                                    <tr style="border-bottom: 1px solid #e2e8f0 !important;">
+                                        <td class="italic" style="color: #64748b;">Taxable Value</td>
+                                        <td class="text-right bold" style="color: #1e293b;">{{ (invoice.total - invoice.discount)|float|round(2) }}</td>
                                     </tr>
-                                    <tr style="border-bottom: 1px solid #e7e5e4 !important;">
-                                        <td class="italic" style="color: #78716c;">GST Tax Total</td>
-                                        <td class="text-right bold" style="color: #44403c;">{{ invoice.total_tax|float|round(2) }}</td>
+                                    <tr style="border-bottom: 1px solid #e2e8f0 !important;">
+                                        <td class="italic" style="color: #64748b;">GST Tax Total</td>
+                                        <td class="text-right bold" style="color: #1e293b;">{{ invoice.total_tax|float|round(2) }}</td>
                                     </tr>
-                                    <tr style="border-bottom: 1px solid #e7e5e4 !important;">
-                                        <td class="italic" style="color: #78716c;">Other Charges</td>
-                                        <td class="text-right" style="color: #57534e;">{{ invoice.additional_charge|float|round(2) }}</td>
+                                    <tr style="border-bottom: 1px solid #e2e8f0 !important;">
+                                        <td class="italic" style="color: #64748b;">Other Charges</td>
+                                        <td class="text-right" style="color: #475569;">{{ invoice.additional_charge|float|round(2) }}</td>
                                     </tr>
-                                    <tr style="border-bottom: 1.5px solid #78716c !important;">
-                                        <td class="italic" style="color: #78716c;">Round off</td>
-                                        <td class="text-right" style="color: #78716c;">{{ invoice.roundoff }}</td>
+                                    <tr style="border-bottom: 1px solid #1e293b !important;">
+                                        <td class="italic" style="color: #64748b;">Round off</td>
+                                        <td class="text-right" style="color: #64748b;">{{ invoice.roundoff }}</td>
                                     </tr>
-                                    <tr style="background-color: #fafaf9 !important; border-top: 1px double #78716c !important;">
-                                        <td class="bold serif-header" style="font-size: 11px; padding: 7px 5px !important; color: #1c1917;">Grand Total</td>
-                                        <td class="text-right bold serif-header" style="font-size: 12px; padding: 7px 5px !important; color: #1c1917;">₹ {{ invoice.grand_total|float|round(2) }}</td>
+                                    <tr style="background-color: #0f172a !important;">
+                                        <td class="bold serif-header" style="font-size: 12px; padding: 8px 6px !important; color: #ffffff; letter-spacing: 0.5px;">Grand Total</td>
+                                        <td class="text-right bold serif-header" style="font-size: 14px; padding: 8px 6px !important; color: #ffffff;">₹ {{ invoice.grand_total|float|round(2) }}</td>
                                     </tr>
                                 </table>
                             </div>
@@ -417,18 +420,18 @@
             max-height: 60mm !important;
             vertical-align: bottom !important;
             margin: 0mm auto !important;
-            border: 1px solid #78716c !important;
+            border: 1px solid #1e293b !important;
             border-top: none !important;
             border-collapse: collapse !important;" cellpadding="0" cellspacing="0">
         <!-- Terms and Conditions -->
         <tr>
             <td>
-                <table style="width: 100% !important; vertical-align: top !important; border-bottom: 1px solid #78716c !important;" cellpadding="0" cellspacing="0">
+                <table style="width: 100% !important; vertical-align: top !important; border-bottom: 1px solid #1e293b !important;" cellpadding="0" cellspacing="0">
                     <tr style="vertical-align: top !important;">
-                        <td style="{{'border-right: 1px solid #78716c;' if company.qr_code_url else ''}} padding: 4mm !important;">
-                            <table style="font-size: 9.5px !important; color: #57534e; line-height: 1.5;">
+                        <td style="{{'border-right: 1px solid #1e293b;' if company.qr_code_url else ''}} padding: 4mm !important;">
+                            <table style="font-size: 9px !important; color: #475569; line-height: 1.6;">
                                 <tr>
-                                    <td class="serif-header bold italic" style="color: #292524; font-size: 10.5px; padding-bottom: 1.5mm;">
+                                    <td class="serif-header bold italic" style="color: #0f172a; font-size: 11px; padding-bottom: 1.5mm;">
                                         Terms & Conditions :
                                     </td>
                                 </tr>
@@ -448,7 +451,7 @@
                         </td>
                         <td style="width: 48mm !important; padding: 4mm !important; text-align: center; vertical-align: middle;">
                             {% if company.qr_code_url %}
-                                <img src="{{ company.qr_code_url }}" style="max-height: 20mm; width: auto;" alt="Payment QR">
+                                <img src="{{ company.qr_code_url }}" style="max-height: 20mm; width: auto; border: 1px solid #e2e8f0; padding: 2px;" alt="Payment QR">
                             {% endif %}
                         </td>
                     </tr>
@@ -461,15 +464,15 @@
                 <table style="width: 100% !important; border-collapse: collapse !important;" cellpadding="0" cellspacing="0">
                     <tr>
                         <td style="width: 45% !important; text-align: center !important; vertical-align: top !important;">
-                            <div style="border-top: 1px solid #d6d3d1 !important; width: 160px !important; margin: 0 auto 4px auto !important;"></div>
-                            <div class="serif-header italic" style="font-size: 9.5px; color: #78716c; margin-bottom: 2px;">Accepted By</div>
-                            <div class="serif-header bold" style="font-size: 11px; color: #292524;">{{ party.name }}</div>
+                            <div style="border-top: 1px solid #94a3b8 !important; width: 160px !important; margin: 0 auto 5px auto !important;"></div>
+                            <div class="serif-header italic" style="font-size: 10px; color: #64748b; margin-bottom: 2px;">Accepted By</div>
+                            <div class="bold" style="font-size: 11px; color: #1e293b;">{{ party.name }}</div>
                         </td>
                         <td style="width: 10% !important;">&nbsp;</td>
                         <td style="width: 45% !important; text-align: center !important; vertical-align: top !important;">
-                            <div style="border-top: 1px solid #d6d3d1 !important; width: 160px !important; margin: 0 auto 4px auto !important;"></div>
-                            <div class="serif-header italic" style="font-size: 9.5px; color: #78716c; margin-bottom: 2px;">For & on behalf of</div>
-                            <div class="serif-header bold" style="font-size: 11px; color: #292524;">{{ company.company_name }}</div>
+                            <div style="border-top: 1px solid #94a3b8 !important; width: 160px !important; margin: 0 auto 5px auto !important;"></div>
+                            <div class="serif-header italic" style="font-size: 10px; color: #64748b; margin-bottom: 2px;">For & on behalf of</div>
+                            <div class="bold" style="font-size: 11px; color: #1e293b;">{{ company.company_name }}</div>
                         </td>
                     </tr>
                 </table>
@@ -478,13 +481,13 @@
 
         <!-- Motto & Footer Tag -->
         <tr>
-            <td class="serif-header italic bold" style="text-align: center !important; padding: 2mm 0 1mm 0 !important; font-size: 12px !important; color: #78716c; letter-spacing: 1px;">
+            <td class="serif-header italic bold" style="text-align: center !important; padding: 2mm 0 1.5mm 0 !important; font-size: 12px !important; color: #64748b; letter-spacing: 1px;">
                 " {{ company.motto or "LIFE'S A JOURNEY, KEEP SMILING" }} "
             </td>
         </tr>
         <tr>
-            <td style="text-align: center !important; padding-bottom: 3mm !important; font-size: 7.5px !important; color: #a8a29e; letter-spacing: 0.2px;">
-                ELEGANT INVOICE FORMAT GENERATED BY VYAPAR DRISHTI BILLING SOLUTIONS.
+            <td style="text-align: center !important; padding-bottom: 3.5mm !important; font-size: 7.5px !important; color: #94a3b8; letter-spacing: 0.5px; text-transform: uppercase;">
+                Elegant Invoice Format Generated By Vyapar Drishti Billing Solutions.
             </td>
         </tr>
     </table>
@@ -492,14 +495,14 @@
 
     {# ---------------- EMPTY SPACE SECTION ---------------- #}
     {% macro fill_space(height=0, text=' ') %}
-    <div style="flex-grow: 1; display: flex; flex-direction: column; width: 190mm !important; margin: 0 auto !important; box-sizing: border-box !important; border-left: 1px solid #78716c !important; border-right: 1px solid #78716c !important;">
+    <div style="flex-grow: 1; display: flex; flex-direction: column; width: 190mm !important; margin: 0 auto !important; box-sizing: border-box !important; border-left: 1px solid #1e293b !important; border-right: 1px solid #1e293b !important;">
         <table style="width: 100% !important;
                 vertical-align: top !important;
                 margin: 0mm auto !important;
                 text-align: center !important;
                 border-collapse: collapse !important;" cellpadding="0" cellspacing="0">
             <tr>
-                <td style="height: {{ ([height, 0] | max) | int }}mm; border: none; font-size: 9px; color: #a8a29e; font-style: italic; vertical-align: middle;">{{ text }}</td>
+                <td style="height: {{ ([height, 0] | max) | int }}mm; border: none; font-size: 9px; color: #94a3b8; font-style: italic; vertical-align: middle;">{{ text }}</td>
             </tr>
         </table>
     </div>

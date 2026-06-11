@@ -71,6 +71,7 @@ def test_render():
         ("Professional", os.path.join(CWD, "templates", "professional.html.j2")),
         ("Marble", os.path.join(CWD, "templates", "marble.html.j2")),
         ("Motors", os.path.join(CWD, "templates", "motors.html.j2")),
+        ("Vyapar", os.path.join(CWD, "templates", "vyapar.html.j2")),
     ]
 
     for name, path in templates_to_test:

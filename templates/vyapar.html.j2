@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Modern Tax Invoice</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+    <style data-purpose="typography">
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Soft neutral background */
+            color: #1e293b; /* Deep slate text */
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+        .print-sheet {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        @media print {
+            body {
+                background-color: #ffffff;
+                padding: 0 !important;
+            }
+            .print-sheet {
+                box-shadow: none !important;
+                border: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                min-height: 100vh !important;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 flex flex-col items-center min-h-screen gap-8">
+
+    {# ================ MACROS ================ #}
+
+    {% macro invoice_header() %}
+    <!-- BEGIN: HeaderSection -->
+    <header class="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-gray-300 pb-6 mb-6">
+        <div class="mb-4 md:mb-0">
+            <p class="text-xs text-gray-500 uppercase tracking-wider font-semibold">GSTIN: {{ company.tin }}</p>
+        </div>
+        <div class="text-center md:text-right">
+            <h1 class="text-2xl font-bold tracking-widest uppercase text-gray-800">Tax Invoice</h1>
+            <p class="text-sm text-gray-500 italic mt-1">Original Copy</p>
+        </div>
+    </header>
+    <!-- END: HeaderSection -->
+
+    <!-- BEGIN: CompanyDetailsSection -->
+    <section class="text-center mb-8 border-b border-gray-200 pb-6">
+        <h2 class="text-3xl font-bold text-gray-900 mb-2">{{ company.company_name }}</h2>
+        <div class="w-16 h-1 bg-blue-500 mx-auto mb-4"></div>
+        <p class="text-sm text-gray-600 leading-relaxed">
+            {{ company.address_1 }}, {{ company.address_2 }}<br/>
+            {{ company.state }}, {{ company.country }} - {{ company.pinCode }}{% if company.state_code %} | State Code: {{ company.state_code }}{% endif %}<br/>
+            {% if company.cin %}CIN: {{ company.cin }}{% endif %}{% if company.cin and company.udyam %} | {% endif %}{% if company.udyam %}UDYAM: {{ company.udyam }}{% endif %}<br/>
+            <span class="italic">phone:</span> {{ company.phone.code }} {{ company.phone.number }} | <span class="italic">email:</span> {{ company.email }}
+        </p>
+    </section>
+    <!-- END: CompanyDetailsSection -->
+
+    <!-- BEGIN: BillingDetailsSection -->
+    <section class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 border-b border-gray-200 pb-6">
+        <!-- Billed To -->
+        <div>
+            <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Invoice To:</h3>
+            <h4 class="text-lg font-bold text-gray-800 mb-1">{{ party.name }}</h4>
+            <p class="text-sm text-gray-600 leading-relaxed">
+                {{ party.mailing_address }}<br/>
+                {{ party.mailing_state }}, {{ party.mailing_country }} - {{ party.mailing_pincode }}<br/>
+                {% if party.email %}<span class="italic">email:</span> {{ party.email }}<br/>{% endif %}
+                {% if party.tin %}GSTIN / TIN: <span class="font-semibold">{{ party.tin }}</span>{% endif %}
+            </p>
+        </div>
+        <!-- Invoice Meta -->
+        <div class="bg-gray-50 p-4 rounded-lg border border-gray-100">
+            <table class="w-full text-sm text-left">
+                <tbody>
+                    <tr class="border-b border-gray-200/50 last:border-0">
+                        <th class="py-1.5 font-medium text-gray-600 w-1/3">Invoice No.</th>
+                        <td class="py-1.5 font-bold text-gray-900 text-right">{{ invoice.voucher_number }}</td>
+                    </tr>
+                    <tr class="border-b border-gray-200/50 last:border-0">
+                        <th class="py-1.5 font-medium text-gray-600">Date of Issue</th>
+                        <td class="py-1.5 text-right">{{ invoice.date }}</td>
+                    </tr>
+                    <tr class="border-b border-gray-200/50 last:border-0">
+                        <th class="py-1.5 font-medium text-gray-600">Place of Supply</th>
+                        <td class="py-1.5 text-right">{{ invoice.place_of_supply }}</td>
+                    </tr>
+                    <tr class="border-b border-gray-200/50 last:border-0">
+                        <th class="py-1.5 font-medium text-gray-600">Mode of Transport</th>
+                        <td class="py-1.5 text-right">{{ invoice.mode_of_transport }}</td>
+                    </tr>
+                    <tr class="border-b border-gray-200/50 last:border-0">
+                        <th class="py-1.5 font-medium text-gray-600">Vehicle No.</th>
+                        <td class="py-1.5 text-right">{{ invoice.vehicle_number }}</td>
+                    </tr>
+                    <tr class="last:border-0">
+                        <th class="py-1.5 font-medium text-gray-600">Payment Method</th>
+                        <td class="py-1.5 text-right italic">{{ invoice.payment_mode }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+    <!-- END: BillingDetailsSection -->
+    {% endmacro %}
+
+
+    {% macro items_table(items, offset=0) %}
+    <!-- BEGIN: ItemsTableSection -->
+    <section class="mb-4 overflow-x-auto">
+        <table class="w-full text-sm text-left border-collapse">
+            <thead class="text-xs text-gray-600 uppercase bg-gray-100 border-y border-gray-300">
+                <tr>
+                    <th class="px-3 py-3 font-semibold w-10 text-center" scope="col">#</th>
+                    <th class="px-3 py-3 font-semibold" scope="col">Item &amp; Description</th>
+                    <th class="px-3 py-3 font-semibold text-center" scope="col">HSN</th>
+                    <th class="px-3 py-3 font-semibold text-center" scope="col">Qty</th>
+                    <th class="px-3 py-3 font-semibold text-center" scope="col">Unit</th>
+                    <th class="px-3 py-3 font-semibold text-right" scope="col">Rate</th>
+                    <th class="px-3 py-3 font-semibold text-right" scope="col">Price</th>
+                    <th class="px-3 py-3 font-semibold text-right" scope="col">Disc.</th>
+                    <th class="px-3 py-3 font-semibold text-center" scope="col">Tax %</th>
+                    <th class="px-3 py-3 font-semibold text-right" scope="col">Tax Amt</th>
+                    <th class="px-3 py-3 font-semibold text-right" scope="col">Amount</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 border-b border-gray-300">
+                {% for item in items %}
+                <tr class="hover:bg-gray-50 transition-colors {% if loop.index0 % 2 == 1 %}bg-gray-50/50{% endif %}">
+                    <td class="px-3 py-4 text-center text-gray-500">{{ offset + loop.index }}</td>
+                    <td class="px-3 py-4 font-medium text-gray-900">{{ item.name }}</td>
+                    <td class="px-3 py-4 text-center text-gray-600">{{ item.hsn }}</td>
+                    <td class="px-3 py-4 text-center text-gray-900">{{ item.qty }}</td>
+                    <td class="px-3 py-4 text-center text-gray-500 text-xs">{{ item.pack }}</td>
+                    <td class="px-3 py-4 text-right text-gray-900">{{ item.rate|float|round(2) }}</td>
+                    <td class="px-3 py-4 text-right text-gray-600">{{ item.amount|float|round(2) }}</td>
+                    <td class="px-3 py-4 text-right text-gray-500">{{ item.discount_amount|float|round(2) }}</td>
+                    <td class="px-3 py-4 text-center text-gray-600">{{ item.tax_rate }}%</td>
+                    <td class="px-3 py-4 text-right text-gray-600">{{ item.tax_amount|float|round(2) }}</td>
+                    <td class="px-3 py-4 text-right font-medium text-gray-900">{{ item.total_amount|float|round(2) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+    <!-- END: ItemsTableSection -->
+    {% endmacro %}
+
+
+    {% macro totals_section(taxes, last_page=False) %}
+    <!-- BEGIN: SummaryAndTaxSection -->
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-4">
+        <!-- Tax Breakdown -->
+        <div class="lg:col-span-2 space-y-6">
+            {% if invoice.tax_code == 'GST' %}
+            <div class="border border-gray-200 rounded-lg overflow-hidden">
+                <table class="w-full text-xs text-center border-collapse">
+                    <thead class="bg-gray-100 text-gray-600 uppercase border-b border-gray-200">
+                        <tr>
+                            {% for header in invoice.tax_headers %}
+                            <th class="py-2 border-r border-gray-200 font-medium {% if loop.last %}border-r-0{% endif %}">{{ header }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody class="text-gray-700 divide-y divide-gray-200">
+                        {% for tax in taxes %}
+                        <tr>
+                            <td class="py-2 border-r border-gray-200">{{ tax.entity }}</td>
+                            <td class="py-2 border-r border-gray-200">{{ tax.taxable_value|float|round(2) }}</td>
+                            <td class="py-2 border-r border-gray-200">{{ tax.igst|float|round(2) }}</td>
+                            <td class="py-2 border-r border-gray-200">{{ tax.cgst|float|round(2) }}</td>
+                            <td class="py-2 border-r border-gray-200">{{ tax.sgst|float|round(2) }}</td>
+                            <td class="py-2 font-semibold">{{ tax.tax_amount|float|round(2) }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    {% if last_page %}
+                    <tfoot class="bg-gray-50 border-t border-gray-300 font-bold text-gray-900">
+                        <tr>
+                            <td class="py-2 border-r border-gray-200">Total</td>
+                            <td class="py-2 border-r border-gray-200">{{ invoice.totals.taxable_value|float|round(2) }}</td>
+                            <td class="py-2 border-r border-gray-200">{{ invoice.totals.igst|float|round(2) }}</td>
+                            <td class="py-2 border-r border-gray-200">{{ invoice.totals.cgst|float|round(2) }}</td>
+                            <td class="py-2 border-r border-gray-200">{{ invoice.totals.sgst|float|round(2) }}</td>
+                            <td class="py-2">{{ invoice.totals.tax_amount|float|round(2) }}</td>
+                        </tr>
+                    </tfoot>
+                    {% endif %}
+                </table>
+            </div>
+            {% endif %}
+
+            {% if last_page %}
+            <!-- Payment Details -->
+            <div class="border border-gray-200 rounded-lg p-4 bg-gray-50/50">
+                <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 border-b border-gray-200 pb-2">Payment Remittance Details</h4>
+                <p class="text-sm text-gray-700 leading-relaxed mt-2">
+                    Bank Name: <span class="font-medium">{{ company.bank_name }}</span> <span class="text-gray-400 mx-1">•</span> Account Number: <span class="font-medium">{{ company.account_no }}</span><br/>
+                    IFSC Code: <span class="font-medium">{{ company.ifsc }}</span> <span class="text-gray-400 mx-1">•</span> Account Name: <span class="font-medium">{{ company.account_name }}</span>
+                </p>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if last_page %}
+        <!-- Totals -->
+        <div class="border border-gray-200 rounded-lg overflow-hidden bg-white h-max">
+            <table class="w-full text-sm">
+                <tbody class="divide-y divide-gray-100">
+                    <tr>
+                        <th class="py-3 px-4 font-medium text-gray-600 text-left">Sub Total</th>
+                        <td class="py-3 px-4 text-right font-semibold">{{ invoice.total|float|round(2) }}</td>
+                    </tr>
+                    <tr>
+                        <th class="py-3 px-4 font-medium text-gray-500 text-left italic">Discount</th>
+                        <td class="py-3 px-4 text-right text-gray-500">-{{ invoice.discount|float|round(2) }}</td>
+                    </tr>
+                    <tr>
+                        <th class="py-3 px-4 font-medium text-gray-600 text-left">Taxable Value</th>
+                        <td class="py-3 px-4 text-right font-semibold">{{ (invoice.total - invoice.discount)|float|round(2) }}</td>
+                    </tr>
+                    <tr>
+                        <th class="py-3 px-4 font-medium text-gray-600 text-left">GST Tax Total</th>
+                        <td class="py-3 px-4 text-right font-semibold">{{ invoice.total_tax|float|round(2) }}</td>
+                    </tr>
+                    <tr>
+                        <th class="py-3 px-4 font-medium text-gray-500 text-left italic">Other Charges</th>
+                        <td class="py-3 px-4 text-right text-gray-500">{{ invoice.additional_charge|float|round(2) }}</td>
+                    </tr>
+                    <tr>
+                        <th class="py-3 px-4 font-medium text-gray-500 text-left italic">Round off</th>
+                        <td class="py-3 px-4 text-right text-gray-500">{{ invoice.roundoff }}</td>
+                    </tr>
+                </tbody>
+                <tfoot class="bg-gray-100 border-t border-gray-300">
+                    <tr>
+                        <th class="py-4 px-4 text-lg font-bold text-gray-900 text-left">Grand Total</th>
+                        <td class="py-4 px-4 text-lg font-bold text-gray-900 text-right">₹ {{ invoice.grand_total|float|round(2) }}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        {% endif %}
+    </section>
+    <!-- END: SummaryAndTaxSection -->
+    {% endmacro %}
+
+
+    {% macro invoice_footer() %}
+    <!-- BEGIN: FooterSection -->
+    <section class="border-t border-gray-300 pt-8 flex flex-col md:flex-row justify-between items-end gap-8 mt-auto">
+        <!-- Terms -->
+        <div class="flex-1">
+            <h4 class="text-sm font-bold text-gray-800 mb-3 italic">Terms &amp; Conditions :</h4>
+            <ol class="list-decimal list-inside text-xs text-gray-600 space-y-1.5 ml-1">
+                <li>We certify that our registration under GST remains valid and current.</li>
+                <li>Delayed payments accrue interest at the rate of 18% per annum.</li>
+                <li>Any dispute shall be settled under the jurisdiction of Udaipur courts.</li>
+                <li>This document is compiled digitally and does not require an ink signature.</li>
+            </ol>
+        </div>
+        <!-- QR Code Placeholder -->
+        <div class="w-24 h-24 border border-gray-300 flex items-center justify-center shrink-0 {% if not company.qr_code_url %}bg-gray-200{% endif %}">
+            {% if company.qr_code_url %}
+            <img src="{{ company.qr_code_url }}" class="max-w-full max-h-full object-contain" alt="QR Code">
+            {% else %}
+            <span class="text-xs text-gray-500 text-center">QR<br/>Code</span>
+            {% endif %}
+        </div>
+    </section>
+
+    <!-- Signatures -->
+    <section class="mt-8 flex justify-between items-end pt-8 border-t border-gray-200 text-center text-sm">
+        <div class="w-1/3">
+            <div class="border-t border-gray-400 pt-2 w-3/4 mx-auto">
+                <p class="text-gray-500 italic text-xs mb-1">Accepted By</p>
+                <p class="font-bold text-gray-800">{{ party.name }}</p>
+            </div>
+        </div>
+        <div class="w-1/3">
+            <div class="border-t border-gray-400 pt-2 w-3/4 mx-auto">
+                <p class="text-gray-500 italic text-xs mb-1">For &amp; on behalf of</p>
+                <p class="font-bold text-gray-800">{{ company.company_name }}</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tagline -->
+    <footer class="mt-8 text-center text-xs text-gray-400">
+        <p class="font-semibold text-gray-500 tracking-widest uppercase mb-1">" {{ company.motto or "Life's a journey, keep smiling" }} "</p>
+        <p>ELEGANT INVOICE FORMAT GENERATED BY VYAPAR DRISHTI BILLING SOLUTIONS.</p>
+    </footer>
+    <!-- END: FooterSection -->
+    {% endmacro %}
+
+
+    {% macro fill_space(text=' ') %}
+    <div class="flex-grow flex flex-col items-center justify-center min-h-[2rem]">
+        <p class="text-xs text-gray-400 italic">{{ text }}</p>
+    </div>
+    {% endmacro %}
+
+
+    {# ================ PAGE LOGIC ================ #}
+    {% set total_items = invoice["items"]|length %}
+    {% set total_hsn   = invoice["taxes"]|length %}
+
+    {% set items_per_page = 14 %} {# Tested to fit well in Tailwind layout #}
+    {% set hsn_per_page   = 10 %}
+
+    {% set items_pages = (total_items // items_per_page) + (1 if total_items % items_per_page > 0 else 0) %}
+    {% if items_pages == 0 %}{% set items_pages = 1 %}{% endif %}
+
+
+    {# ---- Render pages ---- #}
+    {% for page in range(items_pages) %}
+        <main class="print-sheet bg-white w-full max-w-4xl p-8 md:p-12 border border-gray-200 flex flex-col mb-8 print:mb-0" style="min-height: 297mm; {% if not loop.last %}page-break-after: always;{% endif %}">
+
+        {% set start      = page * items_per_page %}
+        {% set end        = start + items_per_page %}
+        {% set page_items = invoice["items"][start:end] %}
+
+        {{ invoice_header() }}
+        {{ items_table(page_items, offset=start) }}
+
+        {% if loop.last %}
+            {# Last items page #}
+            {% if page_items|length <= 8 and total_hsn <= 5 %}
+                {{ fill_space('') }}
+                {{ totals_section(invoice["taxes"], last_page=True) }}
+                {{ invoice_footer() }}
+                </main>
+            {% else %}
+                {# Overflow: Push totals to next page #}
+                {{ fill_space('Continued on next page...') }}
+                {{ invoice_footer() }}
+                </main>
+
+                {% set hsn_pages = (total_hsn // hsn_per_page) + (1 if total_hsn % hsn_per_page > 0 else 0) %}
+                {% if hsn_pages == 0 %}{% set hsn_pages = 1 %}{% endif %}
+
+                {% for p in range(hsn_pages) %}
+                    <main class="print-sheet bg-white w-full max-w-4xl p-8 md:p-12 border border-gray-200 flex flex-col mb-8 print:mb-0" style="min-height: 297mm; {% if not loop.last %}page-break-after: always;{% endif %}">
+                    {{ invoice_header() }}
+
+                    {% set hstart    = p * hsn_per_page %}
+                    {% set hend      = hstart + hsn_per_page %}
+                    {% set hsn_chunk = invoice["taxes"][hstart:hend] %}
+
+                    {{ totals_section(hsn_chunk, last_page=loop.last) }}
+                    {{ fill_space('') }}
+                    {{ invoice_footer() }}
+                    </main>
+                {% endfor %}
+            {% endif %}
+
+        {% else %}
+            {# Not the last items page #}
+            {{ fill_space('Continued on next page...') }}
+            {{ invoice_footer() }}
+            </main>
+        {% endif %}
+    {% endfor %}
+
+</body>
+</html>
