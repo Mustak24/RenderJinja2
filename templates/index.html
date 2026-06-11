@@ -30,7 +30,7 @@
             height: 100vh;
             overflow: hidden;
             font-family: 'Outfit', sans-serif;
-            background-color: #ffffff;
+            background-color: #f1f5f9;
         }
 
         #preview-iframe {
@@ -38,38 +38,99 @@
             height: 100%;
             border: none;
             display: block;
+            background-color: #f8fafc;
         }
 
-        /* Floating Copy Button */
-        .floating-btn {
+        /* Floating Controls Capsule */
+        .floating-controls {
             position: fixed;
             bottom: 24px;
             right: 24px;
-            background: rgba(15, 23, 42, 0.85);
+            background: rgba(15, 23, 42, 0.95);
             backdrop-filter: blur(12px);
             border: 1px solid rgba(255, 255, 255, 0.15);
-            color: #ffffff;
-            padding: 12px 24px;
+            padding: 8px 16px;
             border-radius: 9999px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 16px;
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.4);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 1000;
         }
 
-        .floating-btn:hover {
-            background: var(--accent);
-            border-color: var(--accent);
-            transform: translateY(-2px);
-            box-shadow: 0 15px 30px -5px rgba(99, 102, 241, 0.4);
+        .select-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 13px;
+            font-weight: 500;
         }
 
-        .floating-btn:active {
+        .select-wrapper label {
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: 600;
+        }
+
+        .select-wrapper select {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            padding: 6px 16px;
+            padding-right: 24px;
+            border-radius: 9999px;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23ffffff'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 12px;
+        }
+
+        .select-wrapper select:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .select-wrapper select option {
+            background: #0f172a;
+            color: #ffffff;
+        }
+
+        /* Action Buttons */
+        .action-btn {
+            background: var(--accent);
+            border: none;
+            color: #ffffff;
+            padding: 8px 18px;
+            border-radius: 9999px;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .action-btn:hover {
+            background: var(--accent-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
+        }
+
+        .action-btn:active {
             transform: translateY(0);
         }
 
@@ -83,7 +144,7 @@
             background-color: rgba(11, 15, 25, 0.98);
             backdrop-filter: blur(12px);
             z-index: 999;
-            display: none;
+            display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
@@ -159,13 +220,21 @@
     <!-- Template Output Iframe -->
     <iframe id="preview-iframe" title="Jinja2 Template Live Render"></iframe>
 
-    <!-- Floating Copy Button -->
-    <button class="floating-btn" id="btn-copy">
-        <span>📋</span> Copy HTML
-    </button>
+    <!-- Floating Controls Capsule -->
+    <div class="floating-controls">
+        <div class="select-wrapper">
+            <label for="template-select">Layout:</label>
+            <select id="template-select">
+                <option value="template.html.j2">Default (Root)</option>
+            </select>
+        </div>
+        <button class="action-btn" id="btn-copy">
+            <span>📋</span> Copy HTML
+        </button>
+    </div>
 
     <!-- Error Overlay -->
-    <div class="error-overlay" id="error-overlay">
+    <div class="error-overlay" id="error-overlay" style="display: none;">
         <div class="error-icon">⚠️</div>
         <h3 class="error-title" id="error-type-title">Template Render Error</h3>
         <pre class="error-details" id="error-details-text">Error details will load here...</pre>
@@ -180,10 +249,46 @@
     <script>
         let socket;
         let currentRenderedHTML = "";
+        let currentTemplate = "template.html.j2";
+
+        async function initTemplates() {
+            try {
+                const res = await fetch("/api/templates");
+                const templates = await res.json();
+                
+                const select = document.getElementById("template-select");
+                select.innerHTML = "";
+                
+                templates.forEach(t => {
+                    const opt = document.createElement("option");
+                    opt.value = t.filename;
+                    opt.innerText = t.name;
+                    select.appendChild(opt);
+                });
+
+                // Set initial select option from query parameter or default
+                const urlParams = new URLSearchParams(window.location.search);
+                const queryTpl = urlParams.get('template');
+                
+                if (queryTpl && templates.some(t => t.filename === queryTpl)) {
+                    currentTemplate = queryTpl;
+                } else if (templates.length > 0) {
+                    currentTemplate = templates[0].filename;
+                }
+                
+                select.value = currentTemplate;
+            } catch (err) {
+                console.error("Failed to load templates", err);
+            }
+        }
 
         function connectWS() {
+            if (socket) {
+                socket.close();
+            }
+
             const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            const wsUri = `${protocol}//${window.location.host}/ws`;
+            const wsUri = `${protocol}//${window.location.host}/ws?template=${encodeURIComponent(currentTemplate)}`;
             
             socket = new WebSocket(wsUri);
             
@@ -200,8 +305,11 @@
                 }
             };
             
-            socket.onclose = () => {
-                setTimeout(connectWS, 1000); // Reconnect loop
+            socket.onclose = (e) => {
+                // Try reconnecting in case of failure, except normal closure (like changing template)
+                if (e.code !== 1000) {
+                    setTimeout(connectWS, 1000);
+                }
             };
         }
 
@@ -250,8 +358,21 @@
                 .catch(() => showToast("Failed to copy HTML"));
         });
 
-        // Start connection
-        connectWS();
+        document.getElementById('template-select').addEventListener('change', (e) => {
+            currentTemplate = e.target.value;
+            // Update URL query parameter without reloading
+            const url = new URL(window.location);
+            url.searchParams.set('template', currentTemplate);
+            window.history.pushState({}, '', url);
+            
+            connectWS();
+        });
+
+        // Initialize and Connect
+        (async () => {
+            await initTemplates();
+            connectWS();
+        })();
     </script>
 </body>
 </html>

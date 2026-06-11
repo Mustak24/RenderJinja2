@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Vyapar Premium Invoice</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+            color: #0f172a;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+        .print-sheet {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-radius: 12px;
+        }
+        @media print {
+            body { background-color: #ffffff; padding: 0 !important; }
+            .print-sheet {
+                box-shadow: none !important;
+                border: none !important;
+                border-radius: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                min-height: 100vh !important;
+            }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 flex flex-col items-center min-h-screen gap-4">
+
+    {# ================ MACROS ================ #}
+
+    {% macro invoice_header() %}
+    <!-- Header -->
+    <header class="flex justify-between items-start mb-5 pb-4 border-b-2 border-slate-100">
+        <div class="flex items-center gap-5 w-2/3">
+            {% if company.logo %}
+            <div class="w-20 h-20 shrink-0 bg-white rounded-xl border border-slate-100 p-2 flex items-center justify-center">
+                <img src="{{ company.logo }}" class="max-w-full max-h-full object-contain" alt="Logo">
+            </div>
+            {% endif %}
+            <div>
+                <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight mb-1">{{ company.company_name }}</h1>
+                <p class="text-xs text-slate-500 leading-relaxed max-w-md">
+                    {{ company.address_1 }}, {{ company.address_2 }}<br>
+                    {{ company.state }}, {{ company.country }} - {{ company.pinCode }}
+                </p>
+                <div class="flex flex-wrap items-center gap-2 mt-2 text-xs">
+                    {% if company.tin %}<span class="bg-indigo-50 text-indigo-700 px-2 py-1 rounded font-semibold border border-indigo-100">GSTIN: {{ company.tin }}</span>{% endif %}
+                    {% if company.phone %}<span class="text-slate-500 font-medium ml-1"><span class="text-slate-400">P:</span> {{ company.phone.code }} {{ company.phone.number }}</span>{% endif %}
+                    {% if company.email %}<span class="text-slate-500 font-medium ml-1"><span class="text-slate-400">E:</span> {{ company.email }}</span>{% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="w-1/3 text-right">
+            <h2 class="text-4xl font-black text-indigo-600 uppercase tracking-widest mb-1">Invoice</h2>
+            <div class="inline-block bg-slate-100 text-slate-500 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest mt-1">
+                Original Copy
+            </div>
+        </div>
+    </header>
+
+    <!-- Billing Info Grid -->
+    <section class="grid grid-cols-2 gap-6 mb-5">
+        <!-- Billed To -->
+        <div class="bg-slate-50/50 rounded-2xl p-5 border border-slate-200">
+            <h3 class="text-[10px] font-bold text-indigo-600 uppercase tracking-widest mb-3">Billed To</h3>
+            <h4 class="text-lg font-bold text-slate-900">{{ party.name }}</h4>
+            <p class="text-sm text-slate-600 mt-1 leading-relaxed">
+                {{ party.mailing_address }}<br/>
+                {% if party.mailing_city %}{{ party.mailing_city }}, {% endif %}{{ party.mailing_state }} - {{ party.mailing_pincode }}
+            </p>
+            <div class="mt-3 flex flex-col gap-1 text-xs text-slate-500">
+                {% if party.phone %}<div><span class="text-slate-400 w-12 inline-block">Phone:</span> <span class="font-medium text-slate-700">{{ party.phone }}</span></div>{% endif %}
+                {% if party.tin %}<div><span class="text-slate-400 w-12 inline-block">GSTIN:</span> <span class="font-bold text-slate-800">{{ party.tin }}</span></div>{% endif %}
+            </div>
+        </div>
+
+        <!-- Invoice Meta -->
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm shadow-slate-100">
+            <h3 class="text-[10px] font-bold text-indigo-600 uppercase tracking-widest mb-3">Invoice Details</h3>
+            <div class="grid grid-cols-2 gap-y-3 text-sm">
+                <div class="text-slate-500">Invoice No:</div>
+                <div class="font-bold text-slate-900 text-right">{{ invoice.voucher_number }}</div>
+                
+                <div class="text-slate-500">Invoice Date:</div>
+                <div class="font-semibold text-slate-700 text-right">{{ invoice.date }}</div>
+                
+                <div class="text-slate-500">Place of Supply:</div>
+                <div class="font-semibold text-slate-700 text-right">{{ invoice.place_of_supply }}</div>
+                
+                {% if invoice.vehicle_number %}
+                <div class="text-slate-500">Vehicle No:</div>
+                <div class="font-semibold text-slate-700 text-right">{{ invoice.vehicle_number }}</div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+    {% endmacro %}
+
+    {% macro items_table(items, offset=0) %}
+    <!-- Items Table -->
+    <section class="mb-4">
+        <div class="rounded-2xl border border-slate-200 overflow-hidden shadow-sm shadow-slate-100">
+            <table class="w-full text-[11px] text-left">
+                <thead class="bg-indigo-600 text-white font-semibold">
+                    <tr>
+                        <th class="px-3 py-2 text-center w-10">#</th>
+                        <th class="px-3 py-2">Description of Goods</th>
+                        <th class="px-2 py-2 text-center">HSN/SAC</th>
+                        <th class="px-2 py-2 text-center">Qty</th>
+                        <th class="px-2 py-2 text-right">Rate</th>
+                        <th class="px-2 py-2 text-right">Amount</th>
+                        <th class="px-2 py-2 text-right">Disc.</th>
+                        <th class="px-2 py-2 text-center">Tax %</th>
+                        <th class="px-2 py-2 text-right">Tax Amt</th>
+                        <th class="px-3 py-2 text-right">Total (₹)</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 bg-white">
+                    {% for item in items %}
+                    <tr class="{% if loop.index0 % 2 == 1 %}bg-slate-50/50{% endif %} hover:bg-slate-50 transition-colors">
+                        <td class="px-3 py-2 text-center text-slate-400">{{ offset + loop.index }}</td>
+                        <td class="px-3 py-2 font-semibold text-slate-800">{{ item.name }}</td>
+                        <td class="px-2 py-2 text-center text-slate-500">{{ item.hsn }}</td>
+                        <td class="px-2 py-2 text-center font-semibold text-slate-700">{{ item.qty }} <span class="text-[9px] text-slate-400 font-normal ml-0.5">{{ item.pack }}</span></td>
+                        <td class="px-2 py-2 text-right text-slate-600">{{ "{:,.2f}".format(item.rate|float) }}</td>
+                        <td class="px-2 py-2 text-right text-slate-600">{{ "{:,.2f}".format(item.amount|float) }}</td>
+                        <td class="px-2 py-2 text-right text-red-500">{{ "{:,.2f}".format(item.discount_amount|float) }}</td>
+                        <td class="px-2 py-2 text-center text-slate-500">{{ item.tax_rate }}%</td>
+                        <td class="px-2 py-2 text-right text-slate-600">{{ "{:,.2f}".format(item.tax_amount|float) }}</td>
+                        <td class="px-3 py-2 text-right font-bold text-slate-900">{{ "{:,.2f}".format(item.total_amount|float) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+    {% endmacro %}
+
+    {% macro totals_section(taxes, last_page=False) %}
+    <!-- Summary Section -->
+    <section class="grid grid-cols-12 gap-6 mb-4">
+        <div class="col-span-7 space-y-6">
+            {% if invoice.tax_code == 'GST' and taxes %}
+            <div>
+                <div class="rounded-xl border border-slate-200 overflow-hidden">
+                    <table class="w-full text-[11px] text-right">
+                        <thead class="bg-slate-50 text-slate-500 border-b border-slate-200">
+                            <tr>
+                                {% for header in invoice.tax_headers %}
+                                <th class="py-2 px-3 font-semibold {% if loop.first %}text-left{% endif %}">{{ header }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 bg-white">
+                            {% for tax in taxes %}
+                            <tr>
+                                <td class="py-2 px-3 text-left font-semibold text-slate-700">{{ tax.entity }}</td>
+                                <td class="py-2 px-3 text-slate-600">{{ "{:,.2f}".format(tax.taxable_value|float) }}</td>
+                                <td class="py-2 px-3 text-slate-600">{{ "{:,.2f}".format(tax.igst|float) }}</td>
+                                <td class="py-2 px-3 text-slate-600">{{ "{:,.2f}".format(tax.cgst|float) }}</td>
+                                <td class="py-2 px-3 text-slate-600">{{ "{:,.2f}".format(tax.sgst|float) }}</td>
+                                <td class="py-2 px-3 font-semibold text-slate-800">{{ "{:,.2f}".format(tax.tax_amount|float) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        {% if last_page and invoice.totals %}
+                        <tfoot class="bg-slate-50 border-t border-slate-200 font-bold text-slate-900">
+                            <tr>
+                                <td class="py-2 px-3 text-left text-indigo-700">TOTAL</td>
+                                <td class="py-2 px-3">{{ "{:,.2f}".format(invoice.totals.taxable_value|float) }}</td>
+                                <td class="py-2 px-3">{{ "{:,.2f}".format(invoice.totals.igst|float) }}</td>
+                                <td class="py-2 px-3">{{ "{:,.2f}".format(invoice.totals.cgst|float) }}</td>
+                                <td class="py-2 px-3">{{ "{:,.2f}".format(invoice.totals.sgst|float) }}</td>
+                                <td class="py-2 px-3 text-indigo-700">{{ "{:,.2f}".format(invoice.totals.tax_amount|float) }}</td>
+                            </tr>
+                        </tfoot>
+                        {% endif %}
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if last_page %}
+            <!-- Bank Details -->
+            <div class="bg-slate-50/50 rounded-xl border border-slate-200 p-4">
+                <h3 class="text-[10px] font-bold text-indigo-600 uppercase tracking-widest mb-2">Bank Details</h3>
+                <div class="grid grid-cols-2 gap-y-1 text-[11px]">
+                    <div class="text-slate-500">Bank Name:</div>
+                    <div class="font-semibold text-slate-800">{{ company.bank_name or 'N/A' }}</div>
+                    
+                    <div class="text-slate-500">Account No:</div>
+                    <div class="font-semibold text-slate-800">{{ company.account_no or 'N/A' }}</div>
+                    
+                    <div class="text-slate-500">IFSC Code:</div>
+                    <div class="font-semibold text-slate-800">{{ company.ifsc or 'N/A' }}</div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if last_page %}
+        <div class="col-span-5">
+            <div class="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm shadow-slate-100">
+                <div class="p-4 space-y-2">
+                    <div class="flex justify-between text-[11px]">
+                        <span class="text-slate-500">Sub Total</span>
+                        <span class="font-semibold text-slate-900">{{ "{:,.2f}".format(invoice.total|float) }}</span>
+                    </div>
+                    {% if invoice.discount %}
+                    <div class="flex justify-between text-[11px]">
+                        <span class="text-slate-500">Discount</span>
+                        <span class="font-semibold text-red-500">-{{ "{:,.2f}".format(invoice.discount|float) }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="flex justify-between text-[11px]">
+                        <span class="text-slate-500">Taxable Value</span>
+                        <span class="font-semibold text-slate-900">{{ "{:,.2f}".format((invoice.total - invoice.discount)|float) }}</span>
+                    </div>
+                    {% if invoice.total_tax %}
+                    <div class="flex justify-between text-[11px]">
+                        <span class="text-slate-500">Total Tax</span>
+                        <span class="font-semibold text-slate-900">{{ "{:,.2f}".format(invoice.total_tax|float) }}</span>
+                    </div>
+                    {% endif %}
+                    {% if invoice.additional_charge %}
+                    <div class="flex justify-between text-[11px]">
+                        <span class="text-slate-500">Other Charges</span>
+                        <span class="font-semibold text-slate-900">{{ "{:,.2f}".format(invoice.additional_charge|float) }}</span>
+                    </div>
+                    {% endif %}
+                    {% if invoice.roundoff %}
+                    <div class="flex justify-between text-[11px]">
+                        <span class="text-slate-500">Round off</span>
+                        <span class="font-medium text-slate-500">{{ "{:,.2f}".format(invoice.roundoff|float) }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="bg-indigo-600 px-4 py-3 flex justify-between items-center text-white">
+                    <span class="text-[11px] font-bold uppercase tracking-widest text-indigo-200">Net Payable</span>
+                    <span class="text-lg font-black">₹ {{ "{:,.2f}".format(invoice.grand_total|float) }}</span>
+                </div>
+            </div>
+            {% if invoice.total_in_words %}
+            <div class="mt-3 px-2">
+                <span class="text-[10px] text-slate-400 uppercase tracking-widest">Amount in Words</span>
+                <p class="text-xs font-semibold text-slate-700 leading-snug mt-0.5">Rupees {{ invoice.total_in_words }}</p>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </section>
+    {% endmacro %}
+
+    {% macro invoice_footer() %}
+    <!-- Footer -->
+    <footer class="mt-auto border-t-2 border-slate-100 pt-4 flex justify-between items-end" style="page-break-inside: avoid;">
+        <div class="w-1/2">
+            <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Terms &amp; Conditions</h4>
+            <ol class="list-decimal list-inside text-[10px] text-slate-500 space-y-1 ml-1">
+                <li>Goods once sold will not be taken back.</li>
+                <li>Interest @ 18% p.a. will be charged if payment is delayed.</li>
+                <li>Subject to local jurisdiction only.</li>
+            </ol>
+        </div>
+        <div class="flex items-end gap-6">
+            {% if company.qr_code_url %}
+            <div class="flex flex-col items-center">
+                <div class="w-20 h-20 bg-white border border-slate-200 rounded-lg p-1.5 mb-1.5 shadow-sm">
+                    <img src="{{ company.qr_code_url }}" class="w-full h-full object-contain" alt="Scan to Pay">
+                </div>
+                <span class="text-[9px] font-bold text-indigo-600 uppercase tracking-wider">Scan to Pay</span>
+            </div>
+            {% endif %}
+            <div class="text-center">
+                <div class="text-[10px] text-slate-400 font-medium mb-8">For {{ company.company_name }}</div>
+                <div class="border-t border-slate-300 pt-2 inline-block px-4">
+                    <span class="text-[10px] font-bold text-slate-800 uppercase tracking-widest">Authorized Signatory</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <div class="w-full text-center mt-6 bg-slate-50 py-3 rounded-b-lg border-t border-slate-100 print:rounded-none">
+        <p class="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">
+            {{ company.motto or "Thank you for your business" }}
+        </p>
+    </div>
+    {% endmacro %}
+
+    {% macro fill_space(text=' ') %}
+    <div class="flex-grow flex flex-col items-center justify-center min-h-[2rem]">
+        <p class="text-xs text-slate-300 font-medium italic">{{ text }}</p>
+    </div>
+    {% endmacro %}
+
+    {# ================ PAGE LOGIC ================ #}
+    {% set total_items = invoice["items"]|length %}
+    {% set total_hsn   = invoice["taxes"]|length %}
+
+    {# Configure row heights dynamically. Modify these if template padding changes. #}
+    {% set row_height = 10 %} {# accurately measured tailwind table row #}
+    {% set hsn_row_height = 9 %} 
+    {% set items_header_height = 20 %} 
+    {% set totals_base_height = 60 %} 
+    {% set page_body_height = 125 %} {# ultra conservative: 275 - header - footer - buffer = 125 #}
+    
+    {% set items_per_page = ((page_body_height - items_header_height) // row_height) | int %}
+    {% set hsn_per_page = ((page_body_height - totals_base_height) // hsn_row_height) | int %}
+
+    {% set items_pages = (total_items // items_per_page) + (1 if total_items % items_per_page > 0 else 0) %}
+    {% if items_pages == 0 %}{% set items_pages = 1 %}{% endif %}
+    
+    {% set taxes_total_height = totals_base_height + (total_hsn * hsn_row_height) %}
+
+    {% for page in range(items_pages) %}
+        <main class="print-sheet bg-white w-full max-w-4xl p-8 md:p-12 flex flex-col mx-auto mb-8 print:mb-0 relative" style="min-height: 275mm; page-break-after: always; page-break-inside: avoid; box-sizing: border-box;">
+        
+        <!-- Top decorative border -->
+        <div class="absolute top-0 left-0 w-full h-2 bg-indigo-600 rounded-t-lg print:rounded-none"></div>
+
+        {% set start      = page * items_per_page %}
+        {% set end        = start + items_per_page %}
+        {% set page_items = invoice["items"][start:end] %}
+
+        {{ invoice_header() }}
+        {{ items_table(page_items, offset=start) }}
+
+        {% if loop.last %}
+            {% set space_used_by_items = items_header_height + (page_items|length * row_height) %}
+            {% set remaining_space = page_body_height - space_used_by_items %}
+            
+            {% if remaining_space >= taxes_total_height %}
+                {{ fill_space('') }}
+                {{ totals_section(invoice["taxes"], last_page=True) }}
+                {{ invoice_footer() }}
+                </main>
+            {% else %}
+                {{ fill_space('Continued on next page...') }}
+                {{ invoice_footer() }}
+                </main>
+
+                {% set hsn_pages = (total_hsn // hsn_per_page) + (1 if total_hsn % hsn_per_page > 0 else 0) %}
+                {% if hsn_pages == 0 %}{% set hsn_pages = 1 %}{% endif %}
+
+                {% for p in range(hsn_pages) %}
+                    <main class="print-sheet bg-white w-full max-w-4xl p-8 md:p-12 flex flex-col mx-auto mb-8 print:mb-0 relative" style="min-height: 275mm; page-break-after: always; page-break-inside: avoid; box-sizing: border-box;">
+                    <div class="absolute top-0 left-0 w-full h-2 bg-indigo-600 rounded-t-lg print:rounded-none"></div>
+                    
+                    {{ invoice_header() }}
+
+                    {% set hstart    = p * hsn_per_page %}
+                    {% set hend      = hstart + hsn_per_page %}
+                    {% set hsn_chunk = invoice["taxes"][hstart:hend] %}
+
+                    {{ totals_section(hsn_chunk, last_page=loop.last) }}
+                    {{ fill_space('') }}
+                    {{ invoice_footer() }}
+                    </main>
+                {% endfor %}
+            {% endif %}
+        {% else %}
+            {{ fill_space('Continued on next page...') }}
+            {{ invoice_footer() }}
+            </main>
+        {% endif %}
+    {% endfor %}
+
+</body>
+</html>
