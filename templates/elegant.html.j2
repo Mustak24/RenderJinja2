@@ -113,7 +113,8 @@
     </style>
 </head>
 
-<body>
+<body style="display: flex; justify-content: center; margin: 0; padding: 0;">
+    <div style="width: 190mm;">
     <div class="invoice-container">
     {# ---------------- HEADER SECTION ---------------- #}
     {% macro invoice_header() %}
@@ -545,8 +546,8 @@
             
             {% if remaining_space >= taxes_total_height %}
                 {# Totals fit on this page completely #}
-                {{ totals_section(invoice["taxes"], last_page=True) }}
                 {{ fill_space(remaining_space - taxes_total_height) }}
+                {{ totals_section(invoice["taxes"], last_page=True) }}
                 {{ invoice_footer() }}
             {% else %}
                 {# Totals do not fit. Fill space, page break, and render totals on new page(s) #}
@@ -564,10 +565,9 @@
                     {% set hend = hstart + hsn_per_page %}
                     {% set hsn_chunk = invoice["taxes"][hstart:hend] %}
                     
-                    {{ totals_section(hsn_chunk, last_page=loop.last) }}
-                    
                     {% set hsn_space_used = totals_base_height + (hsn_chunk|length * hsn_row_height) %}
                     {{ fill_space(page_body_height - hsn_space_used, text='') }}
+                    {{ totals_section(hsn_chunk, last_page=loop.last) }}
                     {{ invoice_footer() }}
                 {% endfor %}
             {% endif %}
@@ -581,6 +581,7 @@
         {% endif %}
     {% endfor %}
 
+    </div>
     </div>
 </body>
 

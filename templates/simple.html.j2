@@ -54,7 +54,8 @@
     </style>
 </head>
 
-<body>
+<body style="display: flex; justify-content: center; margin: 0; padding: 0;">
+    <div style="width: 190mm;">
     {# ---------------- HEADER SECTION ---------------- #}
     {% macro invoice_header() %}
     <table style="width: 190mm !important;
@@ -681,22 +682,24 @@
     {% set items_per_page = 24 %}
     {% set hsn_per_page = 12 %}
     {% set row_height = 7 %} {# each row ≈ 7mm #}
-    {% set page_body_height = 135 %} {# space between header & footer in mm #}
+    {% set page_body_height = 151 %} {# conservative: 296 - 85 - 60 = 151 #}
     {% set totals_base_height = 45 %}
 
     {# ---------- CASE 1: Few items + few HSN ---------- #}
     {% if total_items <= 18 and total_hsn <=4 %} 
+    <div style="min-height: 296mm; display: flex; flex-direction: column; background-color: #ffffff; box-sizing: border-box;">
     {{ invoice_header() }} 
     {{ items_table(invoice["items"]) }} 
     {% set empty_space = page_body_height - (invoice["items"]|length * row_height) - (totals_base_height + total_hsn * row_height) %}
     {{ fill_space(empty_space) }} 
     {{ totals_section(invoice["taxes"], last_page=True) }} 
     {{ invoice_footer() }}
-
+    </div>
 
     {# ---------- CASE 2: Few items + many HSN ---------- #} 
     {% elif total_items <=18 and total_hsn > 4 %}
     {# Page 1: items only #}
+    <div style="min-height: 296mm; display: flex; flex-direction: column; background-color: #ffffff; box-sizing: border-box;">
     {{ invoice_header() }}
     {{ items_table(invoice["items"]) }}
     {% set empty_space = page_body_height - (invoice["items"]|length * row_height) %}
@@ -705,42 +708,50 @@
         {{ fill_space(empty_space - taxes_height) }}
         {{ totals_section(invoice["taxes"], last_page=True) }}
         {{ invoice_footer() }}
+        </div>
     {% else %}
         {{ fill_space(empty_space, text='Continue...') }}
         {{ invoice_footer() }}
+        </div>
         <div style="page-break-after: always !important;"></div>
 
         {# Page 2: totals only #}
+        <div style="min-height: 296mm; display: flex; flex-direction: column; background-color: #ffffff; box-sizing: border-box;">
         {{ invoice_header() }}
         {% set empty_space = page_body_height - (totals_base_height + total_hsn * row_height) %}
         {{ fill_space(empty_space) }}
         {{ totals_section(invoice["taxes"], last_page=True) }}
         {{ invoice_footer() }}
+        </div>
     {% endif %}
     
 
     {# ---------- CASE 3: Items 18-24 ---------- #}
     {% elif total_items > 18 and total_items <= 24 %} 
     {# Page 1: items #} 
+    <div style="min-height: 296mm; display: flex; flex-direction: column; background-color: #ffffff; box-sizing: border-box;">
     {{ invoice_header() }} 
     {{  items_table(invoice["items"]) }} 
     {% set empty_space=page_body_height - (invoice["items"]|length * row_height) %} 
     {{ fill_space(empty_space, text='Continue...' ) }} 
     {{ invoice_footer() }} 
+    </div>
     <div style="page-break-after: always !important;"></div>
 
     {# Page 2: totals #}
+    <div style="min-height: 296mm; display: flex; flex-direction: column; background-color: #ffffff; box-sizing: border-box;">
     {{ invoice_header() }}
     {% set empty_space = page_body_height - (totals_base_height + total_hsn * row_height) %}
     {{ fill_space(empty_space) }}
     {{ totals_section(invoice["taxes"], last_page=True) }}
     {{ invoice_footer() }}
-
+    </div>
 
     {# ---------- CASE 4: Items > 24 ---------- #}
     {% else %}
         {% set page_count = (total_items // items_per_page) + (1 if total_items % items_per_page else 0) %}
         {% for page in range(page_count) %}
+            <div style="min-height: 296mm; display: flex; flex-direction: column; background-color: #ffffff; box-sizing: border-box;">
             {% set start = page * items_per_page %}
             {% set end = start + items_per_page %}
             {% set page_items = invoice["items"][start:end] %}
@@ -757,32 +768,37 @@
                     {{ fill_space(empty_space_items - taxes_height) }}
                     {{ totals_section(invoice["taxes"], last_page=True) }}
                     {{ invoice_footer() }}
+                    </div>
                 {% else %}
                     {{ fill_space(empty_space_items, text='Continue...') }}
                     {{ invoice_footer() }}
+                    </div>
                     <div style="page-break-after: always !important;"></div>
                     
                     {% set hsn_pages = (total_hsn // hsn_per_page) + (1 if total_hsn % hsn_per_page else 0) %}
                     {% if hsn_pages == 0 %}{% set hsn_pages = 1 %}{% endif %}
                     {% for p in range(hsn_pages) %}
+                        {% if p > 0 %}
+                            <div style="page-break-after: always !important;"></div>
+                        {% endif %}
+                        <div style="min-height: 296mm; display: flex; flex-direction: column; background-color: #ffffff; box-sizing: border-box;">
                         {% set hstart = p * hsn_per_page %}
                         {% set hend = hstart + hsn_per_page %}
                         {% set hsn_chunk = invoice["taxes"][hstart:hend] %}
 
-                        {% if p > 0 %}
-                            <div style="page-break-after: always !important;"></div>
-                        {% endif %}
                         {{ invoice_header() }}
                         {% set empty_space_hsn = page_body_height - (totals_base_height + hsn_chunk|length * row_height) %}
                         {{ fill_space(empty_space_hsn) }}
                         {{ totals_section(hsn_chunk, last_page=loop.last) }}
                         {{ invoice_footer() }}
+                        </div>
                     {% endfor %}
                 {% endif %}
             {% else %}
                 {% set empty_space = page_body_height - (page_items|length * row_height) %}
                 {{ fill_space(empty_space, text='Continue...') }}
                 {{ invoice_footer() }}
+                </div>
             {% endif %}
 
             {% if not loop.last %}
@@ -793,6 +809,7 @@
 
 
 
+    </div>
 </body>
 
 </html>

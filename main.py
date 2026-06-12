@@ -110,7 +110,7 @@ def load_and_render(template_filename="template.html.j2"):
     try:
         template = env.from_string(template_str)
         rendered_html = template.render(**variables)
-        return {"success": True, "rendered": rendered_html}
+        return {"success": True, "rendered": rendered_html, "raw_jinja": template_str}
     except TemplateSyntaxError as e:
         return {
             "success": False,

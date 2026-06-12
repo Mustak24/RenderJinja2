@@ -62,7 +62,8 @@
     </style>
 </head>
 
-<body>
+<body style="display: flex; justify-content: center; margin: 0; padding: 0;">
+    <div style="width: 190mm;">
     <div class="invoice-container">
     {# ---------------- HEADER SECTION ---------------- #}
     {% macro invoice_header() %}
@@ -494,11 +495,11 @@
     {% set total_hsn = invoice["taxes"]|length %}
     
     {# Configure row heights dynamically. Modify these if template padding changes. #}
-    {% set row_height = 9 %} {# accurately measured to be ~8.5mm #}
-    {% set hsn_row_height = 8 %} 
-    {% set items_header_height = 20 %} {# accurately measured to account for both thead and tfoot #}
-    {% set totals_base_height = 45 %} 
-    {% set page_body_height = 125 %} {# ultra conservative: 275 - 85 - 60 - buffer = 125 #}
+    {% set row_height = 7 %} {# accurately measured to be ~7mm #}
+    {% set hsn_row_height = 5 %} {# accurately measured to be ~5mm #}
+    {% set items_header_height = 12 %} {# accurately measured to account for thead #}
+    {% set totals_base_height = 30 %} {# accurately measured for tax summary base #}
+    {% set page_body_height = 151 %} {# conservative: 296 - 85 (header) - 60 (footer) = 151 #}
     
     {% set items_per_page = ((page_body_height - items_header_height) // row_height) | int %}
     {% set hsn_per_page = ((page_body_height - totals_base_height) // hsn_row_height) | int %}
@@ -509,7 +510,7 @@
     {% set taxes_total_height = totals_base_height + (total_hsn * hsn_row_height) %}
     
     {% for page in range(items_pages) %}
-        <div style="min-height: 275mm; display: flex; flex-direction: column; background-color: #ffffff; page-break-after: always; page-break-inside: avoid; box-sizing: border-box;">
+        <div style="min-height: 296mm; display: flex; flex-direction: column; background-color: #ffffff; page-break-after: always; page-break-inside: avoid; box-sizing: border-box;">
         {% set start = page * items_per_page %}
         {% set end = start + items_per_page %}
         {% set page_items = invoice["items"][start:end] %}
@@ -535,7 +536,7 @@
                 {% if hsn_pages == 0 %}{% set hsn_pages = 1 %}{% endif %}
                 
                 {% for p in range(hsn_pages) %}
-                    <div style="min-height: 275mm; display: flex; flex-direction: column; background-color: #ffffff; page-break-after: always; page-break-inside: avoid; box-sizing: border-box;">
+                    <div style="min-height: 296mm; display: flex; flex-direction: column; background-color: #ffffff; page-break-after: always; page-break-inside: avoid; box-sizing: border-box;">
                     {{ invoice_header() }}
                     {% set hstart = p * hsn_per_page %}
                     {% set hend = hstart + hsn_per_page %}
@@ -556,6 +557,7 @@
         {% endif %}
     {% endfor %}
 
+    </div>
     </div>
 </body>
 </html>

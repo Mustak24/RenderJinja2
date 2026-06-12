@@ -90,7 +90,8 @@
     </style>
 </head>
 
-<body>
+<body style="display: flex; justify-content: center; margin: 0; padding: 0;">
+    <div style="width: 190mm;">
     <div class="invoice-container">
     {# ---------------- HEADER SECTION ---------------- #}
     {% macro invoice_header() %}
@@ -487,6 +488,7 @@
         {% endif %}
     {% endfor %}
 
+    </div>
     </div>
 </body>
 </html>

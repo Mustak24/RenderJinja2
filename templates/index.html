@@ -231,6 +231,9 @@
         <button class="action-btn" id="btn-copy">
             <span>📋</span> Copy HTML
         </button>
+        <button class="action-btn" style="background: #10b981;" id="btn-copy-json">
+            <span>{ }</span> Copy JSON
+        </button>
     </div>
 
     <!-- Error Overlay -->
@@ -249,6 +252,7 @@
     <script>
         let socket;
         let currentRenderedHTML = "";
+        let currentRawJinja = "";
         let currentTemplate = "template.html.j2";
 
         async function initTemplates() {
@@ -299,6 +303,7 @@
                     hideError();
                     updatePreviewFrame(data.rendered);
                     currentRenderedHTML = data.rendered;
+                    currentRawJinja = data.raw_jinja || "";
                 } else {
                     let errorMsg = data.message;
                     showError(data.error_type || 'Render Error', errorMsg);
@@ -348,14 +353,51 @@
             }, 2500);
         }
 
+        function fallbackCopyTextToClipboard(text, successMsg) {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.top = "0";
+            textArea.style.left = "0";
+            textArea.style.position = "fixed";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) showToast(successMsg);
+                else showToast("Failed to copy using fallback.");
+            } catch (err) {
+                showToast("Error copying to clipboard.");
+            }
+            document.body.removeChild(textArea);
+        }
+
+        function copyTextToClipboard(text, successMsg) {
+            if (!navigator.clipboard) {
+                fallbackCopyTextToClipboard(text, successMsg);
+                return;
+            }
+            navigator.clipboard.writeText(text)
+                .then(() => showToast(successMsg))
+                .catch(() => showToast("Failed to copy text."));
+        }
+
         document.getElementById('btn-copy').addEventListener('click', () => {
             if (!currentRenderedHTML) {
                 showToast("No HTML content to copy");
                 return;
             }
-            navigator.clipboard.writeText(currentRenderedHTML)
-                .then(() => showToast("Copied rendered HTML to clipboard!"))
-                .catch(() => showToast("Failed to copy HTML"));
+            copyTextToClipboard(currentRenderedHTML, "Copied rendered HTML to clipboard!");
+        });
+
+        document.getElementById('btn-copy-json').addEventListener('click', () => {
+            if (!currentRawJinja) {
+                showToast("No Jinja content to copy");
+                return;
+            }
+            // Stringify just the HTML so it is a valid JSON string value
+            const jsonStr = JSON.stringify(currentRawJinja);
+            copyTextToClipboard(jsonStr, "Copied JSON string to clipboard!");
         });
 
         document.getElementById('template-select').addEventListener('change', (e) => {
