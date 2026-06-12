@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Vyapar Drishti Sales Invoice</title>
+    <title>Vyapar Drishti Purchase Invoice</title>
     <style>
         * {
             box-sizing: border-box !important;
@@ -14,7 +14,7 @@
             margin: 0 !important;
             font-family: Arial, sans-serif !important;
             font-size: 11px;
-
+            
         }
 
         @media print {
@@ -71,7 +71,7 @@
                     <tr>
                         <td style="width: 60mm !important;">
                             <strong>GSTIN :</strong>{{
-                            company.tin }}
+                            party.tin }}
                         </td>
                         <td style="text-align: center !important;">
                             TAX INVOICE
@@ -86,17 +86,102 @@
         <tr>
             <td>
                 <table style="width: 100% !important; border-collapse: collapse;" cellpadding="0" cellspacing="0">
-                    <!-- Company Details -->
+                    <!-- Party Details -->
                     <tr style="border-bottom: 1px solid #000 !important;">
                         <td colspan="2" style=" padding: 2mm !important;">
-                            <!-- Company Details -->
+                            <!-- Party Details -->
                             <table
                                 style="text-align: center !important; width: 100% !important; border-collapse: collapse;"
-                                cellpadding="0" cellspacing="0">
+                                cellpadding="1" cellspacing="0">
                                 <tr>
                                     <td style="font-size: 18px !important; 
                                         font-weight: bold !important; 
                                         margin-bottom: 2mm !important;">
+                                        {{ party.name }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        {{ party.mailing_address }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        {% if party.mailing_state %}
+                                        {{
+                                        party.mailing_state
+                                        }}
+                                        {% if party.mailing_country %}
+                                        ,&nbsp;{{
+                                        party.mailing_country
+                                        }}
+                                        {% if party.mailing_pincode %}
+                                        &nbsp;-&nbsp;{{
+                                        party.mailing_pincode
+                                        }}
+                                        {% endif %}
+                                        {% else %}
+                                        {% if party.mailing_pincode %}
+                                        &nbsp;-&nbsp;{{
+                                        party.mailing_pincode
+                                        }}
+                                        {% endif %}
+                                        {% endif %}
+                                        {% else %}
+                                        {% if party.mailing_country %}
+                                        {{
+                                        party.mailing_country
+                                        }}
+                                        {% if party.mailing_pincode %}
+                                        &nbsp;-&nbsp;{{
+                                        party.mailing_pincode
+                                        }}
+                                        {% endif %}
+                                        {% else %}
+                                        {% if party.mailing_pincode %}
+                                        {{
+                                        party.mailing_pincode
+                                        }}
+                                        {% endif %}
+                                        {% endif %}
+
+                                        {% endif %}
+                                    </td>
+
+                                </tr>
+                                <tr>
+                                    <td>
+                                        {% if party.phone.number %}
+                                        <strong>Phone
+                                            :</strong> {{
+                                        party.phone.code
+                                        }}&nbsp;{{
+                                        party.phone.number }},
+                                        {% else %}
+                                        &nbsp;
+                                        {% endif %}
+                                        {% if party.email %}
+                                        <strong>Email
+                                            :</strong> {{ party.email }}
+                                        {% else %}
+                                        &nbsp;
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <!-- Invoice and Company Details -->
+                    <tr style="border-bottom: 1px solid #000 !important;">
+                        <td style="width: 50% !important; padding: 2mm !important;">
+                            <!-- Company Details  -->
+                            <table
+                                style="text-align: left !important; width: 100% !important; border-collapse: collapse; vertical-align: top !important;"
+                                cellpadding="1" cellspacing="0">
+                                <tr>
+                                    <td style="font-size: 14px !important; 
+                                        font-weight: bold !important; 
+                                        margin-bottom: 1mm !important;">
                                         {{
                                         company.company_name
                                         }}
@@ -121,56 +206,15 @@
                                 </tr>
                                 <tr>
                                     <td>
-                                        <strong>Phone :</strong> {{ company.phone.code }}
-                                        {{
-                                        company.phone.number }},
                                         <strong>Email
                                             :</strong>{{ company.email }}
-                                    </td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
-                    <!-- Invoice and Party Details -->
-                    <tr style="border-bottom: 1px solid #000 !important;">
-                        <td style="width: 50% !important; padding: 2mm !important;">
-                            <!-- Party Details  -->
-                            <table
-                                style="text-align: left !important; width: 100% !important; border-collapse: collapse; vertical-align: top !important;"
-                                cellpadding="1" cellspacing="0">
-                                <tr>
-                                    <td style="font-size: 18px !important; 
-                                        font-weight: bold !important; 
-                                        margin-bottom: 2mm !important;">
-                                        {{ party.name }}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        {{ party.mailing_address }}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        {{ party.mailing_state
-                                        }}, {{
-                                        party.mailing_country }}
-                                        -
-                                        {{ party.mailing_pincode }}
-                                    </td>
-
-                                </tr>
-                                <tr>
-                                    <td>
-                                        <strong>Email
-                                            :</strong>{{ party.email }}
                                     </td>
                                 </tr>
 
                                 <tr>
                                     <td>
                                         <strong>TIN :</strong> {{
-                                        party.tin }}
+                                        company.tin }}
                                     </td>
                                 </tr>
                             </table>
@@ -207,19 +251,6 @@
                                     </td>
                                     <td style="width: 30% !important;">
                                         {{ invoice.date }}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="width: 60% !important;">
-                                        <strong>
-                                            Place of Supply
-                                        </strong>
-                                    </td>
-                                    <td>
-                                        :
-                                    </td>
-                                    <td style="width: 30% !important;">
-                                        {{ invoice.place_of_supply }}
                                     </td>
                                 </tr>
                                 <tr>
@@ -269,7 +300,11 @@
                     <tr style="border-bottom: 1px solid #000 !important;">
                         <td colspan="2"
                             style="text-align: center; padding: 8px; background-color: #f2f2f2;  font-size: 16px; font-weight: bold;">
-                            Sales&nbsp;Invoice
+                            {% if invoice.voucher_type == 'Quotations' %}
+                            Quotations
+                            {% else %}
+                            Purchase&nbsp;Invoice
+                            {% endif %}
                         </td>
                     </tr>
                 </table>
@@ -398,8 +433,9 @@
             border-collapse: collapse !important;" cellpadding="0" cellspacing="0">
         <!-- Totals Section -->
         <tr>
-            <td class="totals-section">
-                <table style="width: 100% !important; padding: 2mm !important;" cellpadding="0" cellspacing="0">
+            <td class="totals-section" >
+                <table style="width: 100% !important; padding: 2mm !important;" cellpadding="0"
+                    cellspacing="0">
                     <tr>
                         <td style="vertical-align: top !important; ">
                             <table
@@ -548,72 +584,11 @@
     {# ---------------- FOOTERS SECTION ---------------- #}
     {% macro invoice_footer() %}
     <table style="width: 190mm !important;
-            max-height: 60mm !important;
+            max-height: 20mm !important;
             vertical-align: bottom !important;
             margin: 0mm auto !important;
             border: 1px solid #000 !important;
             border-collapse: collapse !important;" cellpadding="0" cellspacing="0">
-        <!-- Terms and Conditions -->
-        <tr>
-            <td>
-                <table
-                    style="width: 100% !important; vertical-align: top !important; border-bottom: 1px solid #000 !important ;"
-                    cellpadding="0" cellspacing="0">
-                    <tr style="vertical-align: top !important; ">
-                        <td style="border-right: 1px solid #000; ">
-                            <table style="font-size: 12px !important; padding-left: 2mm !important;">
-                                <tr>
-                                    <td>
-                                        <strong>
-                                            Terms & Conditions :
-                                        </strong>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        1. This is to certify that we have a valid GST Registration and the above
-                                        information is true.
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        2. Interest @ 18% per annum will be charged on payments due after 15 days from
-                                        the date of billing.
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        3. Please accept goods in proper condition only
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        4. All Disputes & claims will be referred to the court at Udaipur
-                                        jurisdiction.
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        5. Do not make payment without the printed receipt. Please keep the receipt
-                                        safe.
-                                    </td>
-                                </tr>
-                            </table>
-
-                        </td>
-                        <td style="width: 50mm !important; padding: 5mm !important;  height: auto !important;">
-                            <table style="width: 100% !important; border: 1px dashed #ccc !important;">
-                                <tr style=" height: 25mm !important; text-align: center !important;">
-                                    <td>
-                                        Add QR here
-                                    </td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
         <!-- Signature's Section -->
         <tr>
             <td style="margin-top: 2mm !important; padding-top: 4mm !important;">
@@ -659,7 +634,7 @@
         </tr>
     </table>
     {% endmacro %}
-
+    
     {# ---------------- EMPTY SPACE SECTION ---------------- #}
     {% macro fill_space(height=0, text=' ') %}
     <table style="width: 190mm !important;
@@ -679,74 +654,103 @@
     {# ---------------- PAGE LOGIC ---------------- #}
     {% set total_items = invoice["items"]|length %}
     {% set total_hsn = invoice["taxes"]|length %}
+    {% set items_per_page = 26 %}
+    {% set hsn_per_page = 15 %}
+    {% set row_height = 5 %}   {# each row ≈ 5mm #}
+    {% set page_body_height = 170 %} {# space between header & footer in mm #}
+
+    {# ---------- CASE 1: Few items + few HSN ---------- #}
+    {% if total_items <= 20 and total_hsn <=4 %} 
+        {{ invoice_header() }} 
+        {{ items_table(invoice["items"]) }} 
+        {% set empty_space = page_body_height - ((invoice["items"]|length * row_height) + ([invoice["taxes"]|length * row_height, 30]|max)) %}
+        {{ fill_space(empty_space) }}
+        {{ totals_section(invoice["taxes"], last_page=True) }} 
+        {{ invoice_footer() }} 
     
-    {# Configure row heights dynamically. Modify these if template padding changes. #}
-    {% set row_height = 8 %} {# each item row ≈ 8mm #}
-    {% set hsn_row_height = 6 %} {# each HSN row ≈ 6mm #}
-    {% set items_header_height = 12 %} {# height of items table header ≈ 12mm #}
-    {% set totals_base_height = 65 %} {# base height of totals section without HSN ≈ 65mm #}
-    {% set page_body_height = 140 %} {# space between header & footer in mm #}
-    
-    {# Dynamically calculate max items and HSN per full page #}
-    {% set items_per_page = ((page_body_height - items_header_height) // row_height) | int %}
-    {% set hsn_per_page = ((page_body_height - totals_base_height) // hsn_row_height) | int %}
-    
-    {# Calculate total pages needed for items #}
-    {% set items_pages = (total_items // items_per_page) + (1 if total_items % items_per_page > 0 else 0) %}
-    {% if items_pages == 0 %}{% set items_pages = 1 %}{% endif %}
-    
-    {% set taxes_total_height = totals_base_height + (total_hsn * hsn_row_height) %}
-    
-    {% for page in range(items_pages) %}
-        {% set start = page * items_per_page %}
-        {% set end = start + items_per_page %}
-        {% set page_items = invoice["items"][start:end] %}
-        
+    {# ---------- CASE 2: Few items + many HSN ---------- #} 
+    {% elif total_items <=20 and total_hsn> 4 %}
+        {# Page 1: items only #}
         {{ invoice_header() }}
-        {{ items_table(page_items, offset=start) }}
+        {{ items_table(invoice["items"]) }}
+        {% set empty_space = page_body_height - (invoice["items"]|length * row_height) %}
+        {% set taxes_height = ([invoice["taxes"]|length * row_height, 30]|max) %}
+        {% if empty_space > taxes_height %}
+            {{ fill_space(empty_space - taxes_height) }}
+            {{ totals_section(invoice["taxes"], last_page=True) }}
+            {{ invoice_footer() }}
+        {% else %}
+            {{ fill_space(empty_space, text='Continue...') }}
+            {{ invoice_footer() }}
+            <div style="page-break-after: always !important;"></div>
+
+            {# Page 2: totals only #}
+            {{ invoice_header() }}
+            {{ totals_section(invoice["taxes"], last_page=True) }}
+            {% set empty_space = page_body_height - ([invoice["taxes"]|length * row_height, 30]|max) %}
+            {{ fill_space(empty_space) }}
+            {{ invoice_footer() }}
+        {% endif %}
+
+    {# ---------- CASE 3: Items 20-29 ---------- #}
+    {% elif total_items > 20 and total_items <= 26 %} 
+        {# Page 1: items #} 
+        {{ invoice_header() }} 
+        {{ items_table(invoice["items"]) }} 
+        {% set empty_space = page_body_height - (invoice["items"]|length * row_height) %}
+        {{ fill_space(empty_space, text='Continue...') }}
+        {{ invoice_footer() }} 
+        <div style="page-break-after: always !important;"></div>
+
+        {# Page 2: totals #}
+        {{ invoice_header() }}
+        {{ totals_section(invoice["taxes"], last_page=True) }}
+        {% set empty_space = page_body_height - ([invoice["taxes"]|length * row_height, 30]|max) %}
+        {{ fill_space(empty_space) }}
+        {{ invoice_footer() }}
         
-        {% if loop.last %}
-            {# We are on the last items page. Check if totals fit here. #}
-            {% set space_used_by_items = items_header_height + (page_items|length * row_height) %}
-            {% set remaining_space = page_body_height - space_used_by_items %}
-            
-            {% if remaining_space >= taxes_total_height %}
-                {# Totals fit on this page completely #}
-                {{ totals_section(invoice["taxes"], last_page=True) }}
-                {{ fill_space(remaining_space - taxes_total_height) }}
-                {{ invoice_footer() }}
-            {% else %}
-                {# Totals do not fit. Fill space, page break, and render totals on new page(s) #}
-                {{ fill_space(remaining_space, text='Continued on next page...') }}
-                {{ invoice_footer() }}
-                
-                {% set hsn_pages = (total_hsn // hsn_per_page) + (1 if total_hsn % hsn_per_page > 0 else 0) %}
-                {% if hsn_pages == 0 %}{% set hsn_pages = 1 %}{% endif %}
-                
+
+    {# ---------- CASE 4: Items > 26 ---------- #}
+    {% else %}
+        {% set page_count = (total_items // items_per_page) + (1 if total_items % items_per_page else 0) %}
+        {% for page in range(page_count) %}
+            {% set start = page * items_per_page %}
+            {% set end = start + items_per_page %}
+            {% set page_items = invoice["items"][start:end] %}
+
+            {{ invoice_header() }}
+            {{ items_table(page_items, offset=start) }}
+
+            {# If this is the last items page, start totals split #}
+            {% if page == page_count - 1 %}
+            {% set hsn_pages = (total_hsn // hsn_per_page) + (1 if total_hsn % hsn_per_page else 0) %}
                 {% for p in range(hsn_pages) %}
-                    <div style="page-break-after: always !important;"></div>
-                    {{ invoice_header() }}
-                    
                     {% set hstart = p * hsn_per_page %}
                     {% set hend = hstart + hsn_per_page %}
                     {% set hsn_chunk = invoice["taxes"][hstart:hend] %}
-                    
+
+                    {% if p > 0 %}
+                    <div style="page-break-after: always !important;"></div>
+                    {{ invoice_header() }}
+                    {% endif %}
                     {{ totals_section(hsn_chunk, last_page=loop.last) }}
-                    
-                    {% set hsn_space_used = totals_base_height + (hsn_chunk|length * hsn_row_height) %}
-                    {{ fill_space(page_body_height - hsn_space_used) }}
+                    {% set empty_space = page_body_height - ([hsn_chunk|length * row_height, 30]|max) %}
+                    {{ fill_space(empty_space) }}
                     {{ invoice_footer() }}
                 {% endfor %}
-            {% endif %}
-            
-        {% else %}
-            {# Not the last items page #}
-            {% set space_used_by_items = items_header_height + (page_items|length * row_height) %}
-            {{ fill_space(page_body_height - space_used_by_items, text='Continued on next page...') }}
+            {% else %}
+            {% set empty_space = page_body_height - (page_items|length * row_height) %}
+            {{ fill_space(empty_space, text='Continue...') }}
             {{ invoice_footer() }}
+            {% endif %}
+
+            {% if not loop.last %}
             <div style="page-break-after: always !important;"></div>
-        {% endif %}
-    {% endfor %}
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+
 
 </body>
 

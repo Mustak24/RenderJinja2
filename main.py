@@ -2,7 +2,7 @@ import os
 import asyncio
 import json
 import datetime
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from jinja2 import Environment, BaseLoader, TemplateSyntaxError, UndefinedError
 
@@ -66,11 +66,10 @@ env.filters["slugify"] = filter_slugify
 CWD = os.getcwd()
 VARIABLES_FILE = os.path.join(CWD, "variables.json")
 
-def load_and_render(template_filename="template.html.j2"):
-    if template_filename == "template.html.j2":
-        template_path = os.path.join(CWD, "template.html.j2")
-    else:
-        template_path = os.path.join(CWD, "templates", template_filename)
+def load_and_render(template_filename):
+    if not template_filename:
+        return {"success": False, "error_type": "NoTemplate", "message": "No template selected."}
+    template_path = os.path.join(CWD, "templates", template_filename)
 
     if not os.path.exists(template_path):
         return {
@@ -144,59 +143,52 @@ async def get_index():
 @app.get("/api/templates")
 async def get_templates():
     templates = []
-    # Check default root template
-    if os.path.exists(os.path.join(CWD, "template.html.j2")):
-        templates.append({"name": "Default (Root)", "filename": "template.html.j2"})
-    # Check templates folder for other templates
     templates_dir = os.path.join(CWD, "templates")
     if os.path.exists(templates_dir):
-        for filename in sorted(os.listdir(templates_dir)):
-            if filename.endswith(".html.j2"):
-                name = filename.replace(".html.j2", "").replace("_", " ").title()
-                templates.append({"name": name, "filename": filename})
+        for root, dirs, files in os.walk(templates_dir):
+            for filename in sorted(files):
+                if filename.endswith(".html.j2"):
+                    rel_path = os.path.relpath(os.path.join(root, filename), templates_dir)
+                    # Create a friendly name
+                    name = filename.replace(".html.j2", "").replace("_", " ").title()
+                    folder_name = os.path.relpath(root, templates_dir)
+                    if folder_name and folder_name != ".":
+                        name = f"[{folder_name.replace('_', ' ').title()}] {name}"
+                    templates.append({"name": name, "filename": rel_path.replace(os.sep, '/')})
     return templates
 
 
-@app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
-    await websocket.accept()
-    
-    # Get template filename from query param
-    template_filename = websocket.query_params.get("template", "template.html.j2")
-    if template_filename == "template.html.j2":
-        template_path = os.path.join(CWD, "template.html.j2")
+@app.get("/api/raw/{template_type}/{template_variant}")
+async def get_raw_template(template_type: str, template_variant: str):
+    template_filename = f"{template_type}/{template_variant}"
+    if not template_filename.endswith(".html.j2"):
+        if not template_variant.endswith(".html"):
+            template_filename += ".html.j2"
+            
+    result = load_and_render(template_filename)
+    if result.get("success"):
+        return {"success": True, "raw_jinja": result["raw_jinja"]}
+    return result
+
+
+@app.get("/{template_type}/{template_variant}")
+async def render_template_html(template_type: str, template_variant: str):
+    template_filename = f"{template_type}/{template_variant}"
+    if not template_filename.endswith(".html.j2"):
+        if not template_variant.endswith(".html"):
+            template_filename += ".html.j2"
+            
+    result = load_and_render(template_filename)
+    if result.get("success"):
+        return HTMLResponse(content=result["rendered"])
     else:
-        template_path = os.path.join(CWD, "templates", template_filename)
-
-    last_template_mtime = 0.0
-    last_vars_mtime = 0.0
-
-    try:
-        while True:
-            t_changed = False
-            v_changed = False
-
-            if os.path.exists(template_path):
-                t_mtime = os.path.getmtime(template_path)
-                if t_mtime != last_template_mtime:
-                    last_template_mtime = t_mtime
-                    t_changed = True
-
-            if os.path.exists(VARIABLES_FILE):
-                v_mtime = os.path.getmtime(VARIABLES_FILE)
-                if v_mtime != last_vars_mtime:
-                    last_vars_mtime = v_mtime
-                    v_changed = True
-
-            if t_changed or v_changed:
-                result = load_and_render(template_filename)
-                await websocket.send_json(result)
-
-            await asyncio.sleep(0.3)
-    except WebSocketDisconnect:
-        pass
-    except Exception as e:
-        print(f"WebSocket closed with error: {e}")
+        error_html = f'''
+        <div style="font-family: Arial; color: #721c24; background: #f8d7da; padding: 20px; border: 1px solid #f5c6cb; border-radius: 5px;">
+            <h3>{result.get("error_type", "Error")}</h3>
+            <pre style="white-space: pre-wrap;">{result.get("message", "Unknown error")}</pre>
+        </div>
+        '''
+        return HTMLResponse(content=error_html, status_code=400)
 
 
 if __name__ == "__main__":

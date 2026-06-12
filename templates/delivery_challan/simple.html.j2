@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>{{ invoice.voucher_type }}</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:'Segoe UI',Arial,sans-serif;
+    background:#ffffff;
+    color:#222;
+    font-size:12px;
+    line-height:1.5;
+}
+
+.invoice-container{
+    width:190mm;
+    margin:auto;
+    padding:10mm;
+}
+
+.header{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    border-bottom:2px solid #e5e7eb;
+    padding-bottom:8mm;
+}
+
+.company-section{
+    width:60%;
+}
+
+.company-name{
+    font-size:28px;
+    font-weight:700;
+    color:#111827;
+    margin-bottom:4px;
+}
+
+.company-address{
+    color:#6b7280;
+}
+
+.invoice-title{
+    text-align:right;
+}
+
+.invoice-title h1{
+    font-size:32px;
+    color:#2563eb;
+    margin-bottom:8px;
+}
+
+.invoice-meta{
+    border:1px solid #e5e7eb;
+    border-radius:8px;
+    overflow:hidden;
+}
+
+.invoice-meta table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+.invoice-meta td{
+    padding:8px 12px;
+}
+
+.invoice-meta tr:nth-child(even){
+    background:#f9fafb;
+}
+
+.party-section{
+    margin-top:8mm;
+    display:flex;
+    justify-content:space-between;
+    gap:10mm;
+}
+
+.bill-card{
+    flex:1;
+    border:1px solid #e5e7eb;
+    border-radius:10px;
+    padding:5mm;
+    background:#fafafa;
+}
+
+.bill-title{
+    font-size:13px;
+    font-weight:700;
+    color:#6b7280;
+    margin-bottom:2mm;
+    text-transform:uppercase;
+}
+
+.bill-name{
+    font-size:16px;
+    font-weight:700;
+    margin-bottom:2mm;
+}
+
+.items-table{
+    width:100%;
+    margin-top:8mm;
+    border-collapse:collapse;
+}
+
+.items-table thead{
+    background:#2563eb;
+    color:#fff;
+}
+
+.items-table th{
+    padding:10px;
+    text-align:left;
+}
+
+.items-table td{
+    padding:10px;
+    border-bottom:1px solid #e5e7eb;
+}
+
+.items-table tbody tr:nth-child(even){
+    background:#f9fafb;
+}
+
+.footer{
+    margin-top:15mm;
+}
+
+.signatures{
+    display:flex;
+    justify-content:space-between;
+    margin-top:20mm;
+}
+
+.signature{
+    width:60mm;
+    text-align:center;
+}
+
+.signature-line{
+    border-top:1px solid #000;
+    margin-bottom:5px;
+}
+
+.motto{
+    margin-top:15mm;
+    text-align:center;
+    color:#2563eb;
+    font-size:16px;
+    font-weight:700;
+}
+
+.generated{
+    text-align:center;
+    margin-top:4mm;
+    color:#6b7280;
+    font-size:10px;
+}
+
+@media print{
+    .invoice-container{
+        width:100%;
+        padding:0;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="invoice-container">
+
+    <!-- Header -->
+    <div class="header">
+
+        <div class="company-section">
+
+            <div class="company-name">
+                {{ company.company_name }}
+            </div>
+
+            <div class="company-address">
+                {% if company.address_1 %}{{ company.address_1 }}{% endif %}
+                {% if company.address_2 %}{{ ", " ~ company.address_2 }}{% endif %}
+                <br>
+                {% if company.state %}{{ company.state }}{% endif %}
+                {% if company.country %}
+                    {% if company.state %}, {% endif %}{{ company.country }}
+                {% endif %}
+                {% if company.pincode %}
+                    {% if company.country or company.state %} - {% endif %}{{ company.pincode }}
+                {% endif %}
+                <br>
+                {% if company.phone and company.phone.number %}
+                    <strong>Phone:</strong> {{ company.phone.code }} {{ company.phone.number }}<br>
+                {% endif %}
+                {% if company.email %}
+                    <strong>Email:</strong> {{ company.email }}
+                {% endif %}
+            </div>
+
+        </div>
+
+        <div class="invoice-title">
+
+            <h1>
+                {{ invoice.voucher_type }}
+            </h1>
+
+            <div class="invoice-meta">
+                <table>
+                    <tr>
+                        <td>Slip No</td>
+                        <td>{{ invoice.voucher_number }}</td>
+                    </tr>
+                    <tr>
+                        <td>Date</td>
+                        <td>{{ invoice.date }}</td>
+                    </tr>
+                    <tr>
+                        <td>Mode</td>
+                        <td>{{ invoice.mode_of_transport }}</td>
+                    </tr>
+                </table>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Party Details -->
+    <div class="party-section">
+
+        <div class="bill-card">
+            <div class="bill-title">
+                Consignee
+            </div>
+
+            <div class="bill-name">
+                {{ party.name }}
+            </div>
+
+            {{ party.address }}
+
+            <br>
+
+            {% if party.phone and party.phone.number %}{{ party.phone.code }} {{ party.phone.number }}<br>{% endif %}
+
+            {% if party.email %}{{ party.email }}{% endif %}
+        </div>
+
+    </div>
+
+    <!-- Items -->
+
+    <table class="items-table">
+
+        <thead>
+        <tr>
+            <th>SN</th>
+            <th>Description</th>
+            <th>Qty</th>
+            <th>Unit</th>
+        </tr>
+        </thead>
+
+        <tbody>
+
+        {% for item in invoice["items"] %}
+
+        <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ item.name }}</td>
+            <td>{{ item.qty }}</td>
+            <td>{{ item.pack }}</td>
+        </tr>
+
+        {% endfor %}
+
+        </tbody>
+
+    </table>
+
+    <!-- Footer -->
+
+    <div class="footer">
+
+        <div class="signatures">
+
+            <div class="signature">
+                <div class="signature-line"></div>
+                Shipper
+            </div>
+
+            <div class="signature">
+                <div class="signature-line"></div>
+                Authorized Signatory
+            </div>
+
+        </div>
+
+        <div class="motto">
+            {{ company.motto|default("LIFE'S A JOURNEY, KEEP SMILING") }}
+        </div>
+
+        <div class="generated">
+            Generated by Vyapar Drishti GST Billing App
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

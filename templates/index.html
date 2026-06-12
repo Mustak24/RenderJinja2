@@ -225,7 +225,6 @@
         <div class="select-wrapper">
             <label for="template-select">Layout:</label>
             <select id="template-select">
-                <option value="template.html.j2">Default (Root)</option>
             </select>
         </div>
         <button class="action-btn" id="btn-copy">
@@ -253,7 +252,7 @@
         let socket;
         let currentRenderedHTML = "";
         let currentRawJinja = "";
-        let currentTemplate = "template.html.j2";
+        let currentTemplate = "";
 
         async function initTemplates() {
             try {
@@ -286,45 +285,11 @@
             }
         }
 
-        function connectWS() {
-            if (socket) {
-                socket.close();
-            }
-
-            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-            const wsUri = `${protocol}//${window.location.host}/ws?template=${encodeURIComponent(currentTemplate)}`;
-            
-            socket = new WebSocket(wsUri);
-            
-            socket.onmessage = (event) => {
-                const data = JSON.parse(event.data);
-                
-                if (data.success) {
-                    hideError();
-                    updatePreviewFrame(data.rendered);
-                    currentRenderedHTML = data.rendered;
-                    currentRawJinja = data.raw_jinja || "";
-                } else {
-                    let errorMsg = data.message;
-                    showError(data.error_type || 'Render Error', errorMsg);
-                }
-            };
-            
-            socket.onclose = (e) => {
-                // Try reconnecting in case of failure, except normal closure (like changing template)
-                if (e.code !== 1000) {
-                    setTimeout(connectWS, 1000);
-                }
-            };
-        }
-
-        function updatePreviewFrame(htmlContent) {
+        function loadPreview() {
+            if (!currentTemplate) return;
             const iframe = document.getElementById('preview-iframe');
             if (iframe) {
-                const doc = iframe.contentWindow.document;
-                doc.open();
-                doc.write(htmlContent);
-                doc.close();
+                iframe.src = `/${currentTemplate}`;
             }
         }
 
@@ -382,22 +347,31 @@
                 .catch(() => showToast("Failed to copy text."));
         }
 
-        document.getElementById('btn-copy').addEventListener('click', () => {
-            if (!currentRenderedHTML) {
-                showToast("No HTML content to copy");
-                return;
+        document.getElementById('btn-copy').addEventListener('click', async () => {
+            if (!currentTemplate) return;
+            try {
+                const res = await fetch(`/${currentTemplate}`);
+                const html = await res.text();
+                copyTextToClipboard(html, "Copied rendered HTML to clipboard!");
+            } catch (err) {
+                showToast("Failed to fetch HTML content");
             }
-            copyTextToClipboard(currentRenderedHTML, "Copied rendered HTML to clipboard!");
         });
 
-        document.getElementById('btn-copy-json').addEventListener('click', () => {
-            if (!currentRawJinja) {
-                showToast("No Jinja content to copy");
-                return;
+        document.getElementById('btn-copy-json').addEventListener('click', async () => {
+            if (!currentTemplate) return;
+            try {
+                const res = await fetch(`/api/raw/${currentTemplate}`);
+                const data = await res.json();
+                if (data.success && data.raw_jinja) {
+                    const jsonStr = JSON.stringify(data.raw_jinja);
+                    copyTextToClipboard(jsonStr, "Copied JSON string to clipboard!");
+                } else {
+                    showToast("Failed to fetch Jinja content");
+                }
+            } catch (err) {
+                showToast("Failed to fetch Jinja content");
             }
-            // Stringify just the HTML so it is a valid JSON string value
-            const jsonStr = JSON.stringify(currentRawJinja);
-            copyTextToClipboard(jsonStr, "Copied JSON string to clipboard!");
         });
 
         document.getElementById('template-select').addEventListener('change', (e) => {
@@ -407,13 +381,13 @@
             url.searchParams.set('template', currentTemplate);
             window.history.pushState({}, '', url);
             
-            connectWS();
+            loadPreview();
         });
 
         // Initialize and Connect
         (async () => {
             await initTemplates();
-            connectWS();
+            loadPreview();
         })();
     </script>
 </body>
